@@ -233,6 +233,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @param parent the parent context
 	 */
 	public AbstractApplicationContext(@Nullable ApplicationContext parent) {
+		/**
+		 * this() 用于加载资源。
+		 * setParent()
+		 */
 		this();
 		setParent(parent);
 	}
@@ -452,6 +456,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @return the ResourcePatternResolver for this context
 	 * @see #getResources
 	 * @see org.springframework.core.io.support.PathMatchingResourcePatternResolver
+	 *
+	 * 获取一个SpringSource 加载器用于读入SpringBean的配置信息
+	 *
+	 * `Spring 资源加载器的 getResource(String location)` 用于载入资源
 	 */
 	protected ResourcePatternResolver getResourcePatternResolver() {
 		return new PathMatchingResourcePatternResolver(this);
