@@ -185,6 +185,9 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 		Assert.notNull(resources, "Resource array must not be null");
 		int count = 0;
 		for (Resource resource : resources) {
+			/**
+			 *  调用子类 {@link org.springframework.beans.factory.xml.XmlBeanDefinitionReader#loadBeanDefinitions(Resource)}
+			 */
 			count += loadBeanDefinitions(resource);
 		}
 		return count;
@@ -209,8 +212,15 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 	 * @see #getResourceLoader()
 	 * @see #loadBeanDefinitions(org.springframework.core.io.Resource)
 	 * @see #loadBeanDefinitions(org.springframework.core.io.Resource[])
+	 *
+	 * TODO IOC 容器 ~ 分配路径处理策略。
+	 * 
+	 * 1、先从 调用资源加载器的获取资源方法 `resourceLoader.getResource(location)` 获取要加载的资源。
+	 * 2、真正执行加载功能，有子类 {@link org.springframework.beans.factory.xml.XmlBeanDefinitionReader#loadBeanDefinitions(Resource)}
+	 *
 	 */
 	public int loadBeanDefinitions(String location, @Nullable Set<Resource> actualResources) throws BeanDefinitionStoreException {
+		// 获取在 IOC 容器初始化过程中设置的 资源加载器。
 		ResourceLoader resourceLoader = getResourceLoader();
 		if (resourceLoader == null) {
 			throw new BeanDefinitionStoreException(
@@ -220,7 +230,16 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 		if (resourceLoader instanceof ResourcePatternResolver) {
 			// Resource pattern matching available.
 			try {
+				/**
+				 * 将指定位置的 bean 配置信息解析为 spring IOC 容器封装的资源
+				 * 加载多个指定位置 bean 配置信息。
+				 */
 				Resource[] resources = ((ResourcePatternResolver) resourceLoader).getResources(location);
+
+				/**
+				 * 委托子类 {@link org.springframework.beans.factory.xml.XmlBeanDefinitionReader#loadBeanDefinitions(Resource...)}
+				 *  实现加载功能。
+				 */
 				int count = loadBeanDefinitions(resources);
 				if (actualResources != null) {
 					Collections.addAll(actualResources, resources);
@@ -237,7 +256,19 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 		}
 		else {
 			// Can only load single resources by absolute URL.
+			/**
+			 * 将指定位置的 bean 配置信息解析为 spring IOC 容器封装的资源
+			 * 加载单个指定位置的 bean 配置信息。
+			 *
+			 *  1、解析配置文件路径。
+			 *  {@link org.springframework.core.io.DefaultResourceLoader#getResource(String)}
+			 */
 			Resource resource = resourceLoader.getResource(location);
+
+			/**
+			 * 2、开始读取配置内容
+			 * {@link org.springframework.beans.factory.xml.XmlBeanDefinitionReader#loadBeanDefinitions(Resource)}
+			 */
 			int count = loadBeanDefinitions(resource);
 			if (actualResources != null) {
 				actualResources.add(resource);

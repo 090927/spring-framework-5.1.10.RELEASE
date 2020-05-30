@@ -529,7 +529,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		long startTime = System.currentTimeMillis();
 
 		try {
-			// 【 initWebApplicationContext 】 初始化web 容器
+			/**
+			 * 【 initWebApplicationContext 】 初始化 web 容器
+			 */
 			this.webApplicationContext = initWebApplicationContext();
 			initFrameworkServlet();
 		}
@@ -559,10 +561,13 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * @see #FrameworkServlet(WebApplicationContext)
 	 * @see #setContextClass
 	 * @see #setContextConfigLocation
+	 * 初始化Web容器。
 	 */
 	protected WebApplicationContext initWebApplicationContext() {
+		// 先从 ServletContext 中获取父容器 WebApplicationContext
 		WebApplicationContext rootContext =
 				WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+		// 声明子容器。
 		WebApplicationContext wac = null;
 		// 建立父、子容器之间关系。
 		if (this.webApplicationContext != null) {
@@ -582,7 +587,10 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 				}
 			}
 		}
-		// 先去ServletContext 中查找 web 容器的引用是否存在，并创建默认的空IOC 容器
+		/**
+		 * 先去ServletContext 中查找 web 容器的引用是否存在，并创建默认的空IOC 容器
+		 *  {@link #findWebApplicationContext()}
+		 */
 		if (wac == null) {
 			// No context instance was injected at construction time -> see if one
 			// has been registered in the servlet context. If one exists, it is assumed
@@ -590,11 +598,16 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			// user has performed any initialization such as setting the context id
 			wac = findWebApplicationContext();
 		}
-		// 给创建好的容器赋值
 		if (wac == null) {
 			// No context instance is defined for this servlet -> create a local one
+
+			/**
+			 * 给创建好的容器赋值
+			 *  {@link #createWebApplicationContext(ApplicationContext)}
+			 */
 			wac = createWebApplicationContext(rootContext);
 		}
+
 		/**
 		 * 触发 onRefresh, 初始化策略
 		 * {@link DispatcherServlet#onRefresh(ApplicationContext)}
@@ -627,6 +640,8 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * {@code WebApplicationContext} retrieval strategy.
 	 * @return the WebApplicationContext for this servlet, or {@code null} if not found
 	 * @see #getContextAttribute()
+	 *
+	 *  先去ServletContext 中查找 web 容器的引用是否存在，并创建默认的空IOC 容器
 	 */
 	@Nullable
 	protected WebApplicationContext findWebApplicationContext() {

@@ -872,6 +872,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	// Implementation of BeanDefinitionRegistry interface
 	//---------------------------------------------------------------------
 
+	/**
+	 * TODO IOC 将 BeanDefinition 注册到容器。
+	 *
+	 *  `DefaultListableBeanFactory` 使用 HashMap<BeanName, BeanDefinition> 初始值: 256、集合存放Spring IOC 容器中注册解析 BeanDefinition。
+	 */
 	@Override
 	public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
 			throws BeanDefinitionStoreException {
@@ -879,6 +884,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		Assert.hasText(beanName, "Bean name must not be empty");
 		Assert.notNull(beanDefinition, "BeanDefinition must not be null");
 
+		// 校验解析 的 BeanDefinition.
 		if (beanDefinition instanceof AbstractBeanDefinition) {
 			try {
 				((AbstractBeanDefinition) beanDefinition).validate();
@@ -921,6 +927,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		else {
 			if (hasBeanCreationStarted()) {
 				// Cannot modify startup-time collection elements anymore (for stable iteration)
+				/**
+				 * 注册过程中需要线程同步，以保证数据的一致性。
+				 */
 				synchronized (this.beanDefinitionMap) {
 					this.beanDefinitionMap.put(beanName, beanDefinition);
 					List<String> updatedDefinitions = new ArrayList<>(this.beanDefinitionNames.size() + 1);
@@ -939,7 +948,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			this.frozenBeanDefinitionNames = null;
 		}
 
+		// 检测是否已经注册过同名的 BeanDefinition。
 		if (existingDefinition != null || containsSingleton(beanName)) {
+
+			// 重置所有已经注册过的 BeanDefinition 的缓存。
 			resetBeanDefinition(beanName);
 		}
 	}

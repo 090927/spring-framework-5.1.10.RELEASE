@@ -139,7 +139,11 @@ public class DefaultResourceLoader implements ResourceLoader {
 		this.resourceCaches.clear();
 	}
 
-
+	/**
+	 *  TODO IOC ~ 解析配置文件路径
+	 * @param location the resource location
+	 * @return
+	 */
 	@Override
 	public Resource getResource(String location) {
 		Assert.notNull(location, "Location must not be null");
@@ -150,7 +154,7 @@ public class DefaultResourceLoader implements ResourceLoader {
 				return resource;
 			}
 		}
-
+		// 如果是 类路径的方式。使用 ClassPathResource 来得到 Bean 文件的资源对象。
 		if (location.startsWith("/")) {
 			return getResourceByPath(location);
 		}
@@ -160,11 +164,16 @@ public class DefaultResourceLoader implements ResourceLoader {
 		else {
 			try {
 				// Try to parse the location as a URL...
+				// 如果是 URL 方式，使用 UrlResource 作为Bean 文件的资源对象。
 				URL url = new URL(location);
 				return (ResourceUtils.isFileURL(url) ? new FileUrlResource(url) : new UrlResource(url));
 			}
 			catch (MalformedURLException ex) {
 				// No URL -> resolve as resource path.
+				/**
+				 * 既不是 classpath 标识，又不是URL 标示的Resource 定位，则调用
+				 * 容器本身的 {@link #getResourceByPath(String)} 获取 Resource
+				 */
 				return getResourceByPath(location);
 			}
 		}

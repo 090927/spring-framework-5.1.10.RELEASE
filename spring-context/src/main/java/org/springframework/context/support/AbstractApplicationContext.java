@@ -519,44 +519,63 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		return this.applicationListeners;
 	}
 
+	/**
+	 * 规定IOC 容器启动流程。
+	 */
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
 			// Prepare this context for refreshing.
+			// 调用容器准备刷新的方法，获取容器的当前时间，同时给容器设置同步标识
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
+			/**
+			 * 告诉子类启动 refreshBeanFactory() bean 定义资源文件从子类 refreshBeanFactory
+			 *
+			 *  {@link #obtainFreshBeanFactory()}
+			 */
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
+			// 为BeanFactory 配置容器特性。例如：容器加载器、事件处理器
 			prepareBeanFactory(beanFactory);
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
+				// 为容器的某些子类指定特殊POST 事件处理。
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
+				// 调用所有注册的 BeanFactoryPostProcessor Bean
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
+				// 为 beanFactory 注册POST 事件处理器
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
+				// 初始化消息源，和国际化相关
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
+				// 初始化容器事件传播
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
+				// 调用子类某些特殊Bean 的初始化方法
 				onRefresh();
 
 				// Check for listener beans and register them.
+				// 为事件传播注册事件监听器
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
+				// 初始化所有剩余单例bean
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
+				//  初始化容器的生命周期事件处理器。
 				finishRefresh();
 			}
 
@@ -567,9 +586,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				}
 
 				// Destroy already created singletons to avoid dangling resources.
+				// 销毁已创建的 bean
 				destroyBeans();
 
 				// Reset 'active' flag.
+				// 取消刷新操作，重置容器的同步标识。
 				cancelRefresh(ex);
 
 				// Propagate exception to caller.
@@ -579,6 +600,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			finally {
 				// Reset common introspection caches in Spring's core, since we
 				// might not ever need metadata for singleton beans anymore...
+				// 重设公共缓存。
 				resetCommonCaches();
 			}
 		}
@@ -639,8 +661,17 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @return the fresh BeanFactory instance
 	 * @see #refreshBeanFactory()
 	 * @see #getBeanFactory()
+	 *
+	 *  启动容器载入 bean 配置信息的过程。
 	 */
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
+		/**
+		 * 1、父类定义抽象的 {@link #refreshBeanFactory() } 方法。
+		 *
+		 * 具体实现调用子类容器的 {@link AbstractRefreshableApplicationContext#refreshBeanFactory()}  方法。
+		 *
+		 * 2、
+		 */
 		refreshBeanFactory();
 		return getBeanFactory();
 	}

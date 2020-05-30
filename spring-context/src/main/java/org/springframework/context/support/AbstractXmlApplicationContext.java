@@ -76,21 +76,43 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 	 * @see org.springframework.beans.factory.xml.XmlBeanDefinitionReader
 	 * @see #initBeanDefinitionReader
 	 * @see #loadBeanDefinitions
+	 *
+	 * 载入配置路径。
 	 */
 	@Override
 	protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws BeansException, IOException {
 		// Create a new XmlBeanDefinitionReader for the given BeanFactory.
+		/**
+		 * 创建 XmlBeanDefinitionReader 即创建Bean 读取器。
+		 * 并通过回调设置到容器。容器使用读取器读取。Bean 配置的资源。
+		 */
 		XmlBeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);
 
 		// Configure the bean definition reader with this context's
 		// resource loading environment.
+		/**
+		 * 为Bean 读取设置 spring 资源加载器
+		 * AbstractXmlApplicationContext -> （继承）AbstractApplicationContext -> DefaultResourceLoader
+		 * 因此容器本身，也是一个资源加载器。
+		 */
 		beanDefinitionReader.setEnvironment(this.getEnvironment());
 		beanDefinitionReader.setResourceLoader(this);
+		// 为 bean 读取设置 SAX xml 解析器。
 		beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(this));
 
 		// Allow a subclass to provide custom initialization of the reader,
 		// then proceed with actually loading the bean definitions.
+
+		/**
+		 * 当Bean，读取Bean 定义的 xml  资源文件时，启用 xml 校验机制
+		 */
 		initBeanDefinitionReader(beanDefinitionReader);
+
+		/**
+		 * bean 读取器真正实现加载的方法，
+		 *
+		 * {@link #loadBeanDefinitions(XmlBeanDefinitionReader)}
+		 */
 		loadBeanDefinitions(beanDefinitionReader);
 	}
 
@@ -117,14 +139,31 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 	 * @see #getConfigLocations
 	 * @see #getResources
 	 * @see #getResourcePatternResolver
+	 *
+	 * xml  bean 读取器加载Bean 配置资源。
 	 */
 	protected void loadBeanDefinitions(XmlBeanDefinitionReader reader) throws BeansException, IOException {
+		// 获取 bean 配置资源的定位。
 		Resource[] configResources = getConfigResources();
 		if (configResources != null) {
+			/**
+			 * xml bean 调用父类。定位bean 配置资源
+			 * {@link org.springframework.beans.factory.support.AbstractBeanDefinitionReader#loadBeanDefinitions(Resource...)}
+			 */
 			reader.loadBeanDefinitions(configResources);
 		}
+		/**
+		 * 如果子类中获取 bean 配置资源为空
+		 * 则从 {@link ClassPathXmlApplicationContext#ClassPathXmlApplicationContext(String[], boolean, ApplicationContext)}
+		 * 	 setConfigLocations 设置资源。
+		 */
 		String[] configLocations = getConfigLocations();
 		if (configLocations != null) {
+
+			/**
+			 * 调用父类，定位Bean 配置资源
+			 * {@link org.springframework.beans.factory.support.AbstractBeanDefinitionReader#loadBeanDefinitions(String...)}
+			 */
 			reader.loadBeanDefinitions(configLocations);
 		}
 	}

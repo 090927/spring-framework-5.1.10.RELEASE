@@ -234,8 +234,14 @@ public abstract class AnnotationConfigUtils {
 		processCommonDefinitionAnnotations(abd, abd.getMetadata());
 	}
 
+	/**
+	 * 向容器注解 bean 之前，首先对注解 bean 定义类中通用注解进行处理。
+	 * @param abd
+	 * @param metadata
+	 */
 	static void processCommonDefinitionAnnotations(AnnotatedBeanDefinition abd, AnnotatedTypeMetadata metadata) {
 		AnnotationAttributes lazy = attributesFor(metadata, Lazy.class);
+		// 如果 bean 定义 @Lazy 注解，则将 Bean 预实例化属性设置 @Lazy 注解的值。
 		if (lazy != null) {
 			abd.setLazyInit(lazy.getBoolean("value"));
 		}
@@ -246,6 +252,7 @@ public abstract class AnnotationConfigUtils {
 			}
 		}
 
+		// 如果bean 中定义 @Primary 注解, 则将该 bean，设置 autowiring 自动依赖装配的首先对象。
 		if (metadata.isAnnotated(Primary.class.getName())) {
 			abd.setPrimary(true);
 		}
@@ -258,20 +265,41 @@ public abstract class AnnotationConfigUtils {
 		if (role != null) {
 			abd.setRole(role.getNumber("value").intValue());
 		}
+
+		/**
+		 * 如果Bean 定义 @Description 则为该 bean 设置所依赖的 bean名称。
+		 * 容器，将确保在实例化改 bean 之前，首先实例化所依赖的bean。
+		 */
 		AnnotationAttributes description = attributesFor(metadata, Description.class);
 		if (description != null) {
 			abd.setDescription(description.getString("value"));
 		}
 	}
 
+	/**
+	 *
+	 * applyScopedProxyMode 方法，根据注解 Bean 定义类中配置的作用域，@Scope 注解的值。为Bean定义 应用相应的代理。
+	 * 	【 Spring 面向切面编程 AOP 使用】
+	 * @return
+	 */
 	static BeanDefinitionHolder applyScopedProxyMode(
 			ScopeMetadata metadata, BeanDefinitionHolder definition, BeanDefinitionRegistry registry) {
 
+		// 获取 注解 Bean 定义 @Scope 注解 proxyMode 属性值。
 		ScopedProxyMode scopedProxyMode = metadata.getScopedProxyMode();
+		// 【 如果配置 @Scope 注解 ProxyMode 属性值为 NO。则不应用代理模式 】
 		if (scopedProxyMode.equals(ScopedProxyMode.NO)) {
 			return definition;
 		}
+
+		/**
+		 * 如果，ProxyMode
+		 * 	为 TARGET_CLASS 返回true、
+		 * 	如果为 INTERFACES 返回false
+		 */
 		boolean proxyTargetClass = scopedProxyMode.equals(ScopedProxyMode.TARGET_CLASS);
+
+		// 为注册 的Bean 创建相应模式的代理对象。
 		return ScopedProxyCreator.createScopedProxy(definition, registry, proxyTargetClass);
 	}
 
