@@ -6,8 +6,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * DATE 2020-05-30
- *
- * @author wangcun
  */
 public class MyApplication {
 
