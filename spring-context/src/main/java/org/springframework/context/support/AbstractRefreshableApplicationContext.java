@@ -121,7 +121,7 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 * bean factory, shutting down the previous bean factory (if any) and
 	 * initializing a fresh bean factory for the next phase of the context's lifecycle.
 	 *
-	 * 启动容器载入 bean 配置信息的过程
+	 * TODO IOC ~ 创建容器。
 	 */
 	@Override
 	protected final void refreshBeanFactory() throws BeansException {
@@ -144,7 +144,7 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 			 * 调用载入 bean 定义的方法，
 			 * 当前类中定义抽象方法，具体实现，调用子类容器实现。
 			 *
-			 * {@link AbstractXmlApplicationContext#loadBeanDefinitions(DefaultListableBeanFactory)}
+			 *  【 加载、注册 】装置bean 定义 {@link AbstractXmlApplicationContext#loadBeanDefinitions(DefaultListableBeanFactory)}
 			 */
 			loadBeanDefinitions(beanFactory);
 			synchronized (this.beanFactoryMonitor) {

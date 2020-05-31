@@ -170,6 +170,11 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		this.registry = registry;
 
 		if (useDefaultFilters) {
+
+			/**
+			 * 向容器注册过滤规则 {@link ClassPathScanningCandidateComponentProvider#registerDefaultFilters()}
+			 * 1、添加过滤规则。@Component、@ManagedBean、@Named
+			 */
 			registerDefaultFilters();
 		}
 		setEnvironment(environment);
@@ -298,7 +303,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		for (String basePackage : basePackages) {
 
 			/**
-			 * 调用父类 {@link ClassPathScanningCandidateComponentProvider#addCandidateComponentsFromIndex(CandidateComponentsIndex, String)}
+			 * 调用父类 {@link ClassPathScanningCandidateComponentProvider#findCandidateComponents(String)}
 			 * 扫描给定路径，获取符合条件的 Bean。
 			 */
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);

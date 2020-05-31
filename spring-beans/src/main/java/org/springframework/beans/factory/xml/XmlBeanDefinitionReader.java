@@ -300,7 +300,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @return the number of bean definitions found
 	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
 	 *
-	 * TODO IOC ~ 开始读取配置内容
+	 * TODO IOC【 加载阶段 】~ 开始读取配置内容
 	 */
 	@Override
 	public int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException {
@@ -342,8 +342,8 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 					inputSource.setEncoding(encodedResource.getEncoding());
 				}
 				/**
-				 * 【 具体 读取过程 】
-				 *  {@link #doLoadBeanDefinitions(InputSource, Resource)}
+				 *
+				 *  【 具体 读取过程 】 {@link #doLoadBeanDefinitions(InputSource, Resource)}
 				 */
 				return doLoadBeanDefinitions(inputSource, encodedResource.getResource());
 			}
@@ -404,16 +404,13 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 
 		try {
 			/**
-			 * 将 XML 文件转换为 DOM。解析过程
 			 *
-			 * {@link #doLoadBeanDefinitions(InputSource, Resource)}
+			 *  将 XML 文件转换为 DOM。解析过程{@link #doLoadDocument(InputSource, Resource)}
 			 */
 			Document doc = doLoadDocument(inputSource, resource);
 
 			/**
-			 * 对 Bean 定义解析的详细过程，解析过程会调用 Spring 的 Bean 配置规则。
-			 *
-			 * {@link #registerBeanDefinitions(Document, Resource)}
+			 *  按照 Spring 的语义要求将Bean 配置信息解析并转换为容器内部数据结构 {@link #registerBeanDefinitions(Document, Resource)}
 			 */
 			int count = registerBeanDefinitions(doc, resource);
 			if (logger.isDebugEnabled()) {
@@ -537,7 +534,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see #setDocumentReaderClass
 	 * @see BeanDefinitionDocumentReader#registerBeanDefinitions
 	 *
-	 * TODO IOC ~ 分配解析策略
+	 * TODO IOC【2、加载阶段】 ~ 分配解析策略
 	 *
 	 * 按照 Spring bean 语义要求将 Bean配置信息解析并转换为容器内部数据结构。
 	 */

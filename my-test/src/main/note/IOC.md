@@ -3,19 +3,38 @@
 ### BeanFactory
 - `DefaultListableBeanFactory`
 
-### IOC 容器
+### Web IOC 容器
 - `DispatcherServlet` -> `HttpServletBean # init()`
 
 ### 基于 XML 的IOC 容器初始化
-- BeanDefinition 的 resource 订单
-- 加载
-- 注册
+
+#### 【 定位阶段 】（Spring 定义需要读取那些bean ）BeanDefinition 的 resource 定位
+##### 基于 XML 的IOC容器初始化入口 `ClassPathXmlApplicationContext`
+- `创建容器` -> `AbstractRefreshableApplicationContext#refreshBeanFactory()`
+    -  载入bean定义 -> `AbstractXmlApplicationContext # loadBeanDefinitions()`  
+
+#### 【 加载阶段 】
+- 载入配置路径 -> `AbstractXmlApplicationContext # loadBeanDefinitions()`
+    - `开始读取配置内容` -> `XmlBeanDefinitionReader #loadBeanDefinitions()` 
+    - `doLoadDocument` 准备文档对象。
+    - `registerBeanDefinitions`
+
+#### 【 注册阶段 】
+- `DefaultBeanDefinitionDocumentReader#registerBeanDefinitions` 
+    - `parseBeanDefinitions` 从跟路径解析 DOM 文档对象。
+-  解析 `BeanDefinitionHolder`  
+    - `BeanDefinitionParserDelegate#parseBeanDefinitionElement(Element)` 
+-  将 `BeanDefinitionHolder` 注册 IOC
+    -  `BeanDefinitionReaderUtils#registerBeanDefinition`
+- 将 `BeanDefinition` 注册 IOC
+    - `DefaultListableBeanFactory#registerBeanDefinition`
+
 
 #### 基于 XML 的IOC容器初始化入口。
 - `ClassPathXmlApplicationContext` 构造方法
     - 获取文件路径
     - 创建Spring 容器加载
-    - 刷新容器 ``AbstractApplication # refresh()``   
+    - 规定 IOC 容器启动流程 ``AbstractApplication # refresh()``   
 - `AbstractBeanDefinitionReader` 获取bean 资源加载器。
 
 

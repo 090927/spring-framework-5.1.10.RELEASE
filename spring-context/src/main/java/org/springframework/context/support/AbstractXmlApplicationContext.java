@@ -77,7 +77,7 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 	 * @see #initBeanDefinitionReader
 	 * @see #loadBeanDefinitions
 	 *
-	 * 载入配置路径。
+	 * 【IOC 定位阶段 】载入配置路径。
 	 */
 	@Override
 	protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws BeansException, IOException {
@@ -109,9 +109,7 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 		initBeanDefinitionReader(beanDefinitionReader);
 
 		/**
-		 * bean 读取器真正实现加载的方法，
-		 *
-		 * {@link #loadBeanDefinitions(XmlBeanDefinitionReader)}
+		 * bean 读取器真正实现加载的方法 {@link #loadBeanDefinitions(XmlBeanDefinitionReader)}
 		 */
 		loadBeanDefinitions(beanDefinitionReader);
 	}
@@ -141,8 +139,10 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 	 * @see #getResourcePatternResolver
 	 *
 	 * xml  bean 读取器加载Bean 配置资源。
+	 * TODO IOC【 加载阶段 】 ~ 载入配置路径
 	 */
 	protected void loadBeanDefinitions(XmlBeanDefinitionReader reader) throws BeansException, IOException {
+
 		// 获取 bean 配置资源的定位。
 		Resource[] configResources = getConfigResources();
 		if (configResources != null) {

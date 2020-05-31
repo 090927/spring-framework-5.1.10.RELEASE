@@ -225,6 +225,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * Create a new AbstractApplicationContext with no parent.
 	 */
 	public AbstractApplicationContext() {
+		/**
+		 * 获取一个Spring Source 的加载器用于读入Spring Bean的配置信息。
+		 */
 		this.resourcePatternResolver = getResourcePatternResolver();
 	}
 
@@ -531,9 +534,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 			// Tell the subclass to refresh the internal bean factory.
 			/**
-			 * 告诉子类启动 refreshBeanFactory() bean 定义资源文件从子类 refreshBeanFactory
-			 *
-			 *  {@link #obtainFreshBeanFactory()}
+			 *  告诉子类启动 refreshBeanFactory() bean 定义资源文件从子类 refreshBeanFactory {@link #obtainFreshBeanFactory()}
 			 */
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
@@ -662,7 +663,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see #refreshBeanFactory()
 	 * @see #getBeanFactory()
 	 *
-	 *  启动容器载入 bean 配置信息的过程。
+	 *  TODO IOC【1、定位阶段】 ~ 启动容器载入 bean 配置信息的过程。
 	 */
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
 		/**

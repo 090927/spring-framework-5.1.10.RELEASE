@@ -179,7 +179,9 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 		return this.beanNameGenerator;
 	}
 
-
+	/**
+	 * 【IOC 加载阶段】
+	 */
 	@Override
 	public int loadBeanDefinitions(Resource... resources) throws BeanDefinitionStoreException {
 		Assert.notNull(resources, "Resource array must not be null");
@@ -213,7 +215,7 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 	 * @see #loadBeanDefinitions(org.springframework.core.io.Resource)
 	 * @see #loadBeanDefinitions(org.springframework.core.io.Resource[])
 	 *
-	 * TODO IOC 容器 ~ 分配路径处理策略。
+	 * TODO IOC 容器【2、加载阶段】~ 分配路径处理策略。
 	 * 
 	 * 1、先从 调用资源加载器的获取资源方法 `resourceLoader.getResource(location)` 获取要加载的资源。
 	 * 2、真正执行加载功能，有子类 {@link org.springframework.beans.factory.xml.XmlBeanDefinitionReader#loadBeanDefinitions(Resource)}

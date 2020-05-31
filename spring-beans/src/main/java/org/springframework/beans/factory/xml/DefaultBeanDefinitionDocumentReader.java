@@ -91,7 +91,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 * <p>Opens a DOM Document; then initializes the default settings
 	 * specified at the {@code <beans/>} level; then parses the contained bean definitions.
 	 *
-	 * TODO IOC ~ 将配置载入内存
+	 * TODO IOC 【3、注册阶段】~ 将配置载入内存
 	 */
 	@Override
 	public void registerBeanDefinitions(Document doc, XmlReaderContext readerContext) {
@@ -99,7 +99,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		this.readerContext = readerContext;
 
 		/**
-		 * 将配置载入内存 {@link #doRegisterBeanDefinitions(Element)}
+		 *  解析bean 文档对象 {@link #doRegisterBeanDefinitions(Element)}
 		 */
 		doRegisterBeanDefinitions(doc.getDocumentElement());
 	}
@@ -164,7 +164,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		preProcessXml(root);
 
 		/**
-		 *  使用 Spring 的Bean 规则从文档的跟元素开始
+		 *  使用 Spring 的Bean 规则从文档的根元素开始
 		 *  	bean 定义的文档对象的解析 {@link #parseBeanDefinitions(Element, BeanDefinitionParserDelegate)}
 		 */
 		parseBeanDefinitions(root, this.delegate);
@@ -258,9 +258,8 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		}
 
 		/**
-		 * 解析 <bean> 元素，按照Spring 的Bean 规则进行解析
-		 *
-		 * {@link #processBeanDefinition
+		 * 【 注册IOC容器 】
+		 *  解析 <bean> 元素，按照Spring 的Bean 规则进行解析 {@link #processBeanDefinition
 		 */
 		else if (delegate.nodeNameEquals(ele, BEAN_ELEMENT)) {
 			processBeanDefinition(ele, delegate);

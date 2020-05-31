@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
@@ -27,6 +28,8 @@ import org.springframework.context.annotation.AnnotationConfigRegistry;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ScopeMetadataResolver;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -193,12 +196,22 @@ public class AnnotationConfigWebApplicationContext extends AbstractRefreshableWe
 	 * @see #setConfigLocations(String[])
 	 * @see AnnotatedBeanDefinitionReader
 	 * @see ClassPathBeanDefinitionScanner
+	 *
+	 *  载入注解Bean 定义资源。
 	 */
 	@Override
 	protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) {
+
+		// 为容器设置注解 bean 定义读取器。
 		AnnotatedBeanDefinitionReader reader = getAnnotatedBeanDefinitionReader(beanFactory);
+
+		/**
+		 * 为容器设置类路径 bean 定义扫描器。
+		 * 最终实现类 {@link ClassPathBeanDefinitionScanner#ClassPathBeanDefinitionScanner(BeanDefinitionRegistry, boolean, Environment, ResourceLoader)}
+		 */
 		ClassPathBeanDefinitionScanner scanner = getClassPathBeanDefinitionScanner(beanFactory);
 
+		// 获取 容器bean 名称 生成器。
 		BeanNameGenerator beanNameGenerator = getBeanNameGenerator();
 		if (beanNameGenerator != null) {
 			reader.setBeanNameGenerator(beanNameGenerator);
@@ -206,7 +219,10 @@ public class AnnotationConfigWebApplicationContext extends AbstractRefreshableWe
 			beanFactory.registerSingleton(AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR, beanNameGenerator);
 		}
 
+		// 获取 容器作用域元信息的解析器。
 		ScopeMetadataResolver scopeMetadataResolver = getScopeMetadataResolver();
+
+		// 为注解 bean 定义读取器、类路径扫描设置作用域元信息解析器。
 		if (scopeMetadataResolver != null) {
 			reader.setScopeMetadataResolver(scopeMetadataResolver);
 			scanner.setScopeMetadataResolver(scopeMetadataResolver);
@@ -228,10 +244,13 @@ public class AnnotationConfigWebApplicationContext extends AbstractRefreshableWe
 			scanner.scan(StringUtils.toStringArray(this.basePackages));
 		}
 
+		// 获取容器定义的bean 定义资源路径
 		String[] configLocations = getConfigLocations();
 		if (configLocations != null) {
 			for (String configLocation : configLocations) {
 				try {
+
+					// 使用当前容器的类加载器定位路径字节码文件。
 					Class<?> clazz = ClassUtils.forName(configLocation, getClassLoader());
 					if (logger.isTraceEnabled()) {
 						logger.trace("Registering [" + configLocation + "]");
@@ -243,6 +262,10 @@ public class AnnotationConfigWebApplicationContext extends AbstractRefreshableWe
 						logger.trace("Could not load class for config location [" + configLocation +
 								"] - trying package scan. " + ex);
 					}
+
+					/**
+					 * 则启用容器类路径扫描器，扫描给定路径包及其子包中的类。{@link ClassPathBeanDefinitionScanner#scan(String...)}
+					 */
 					int count = scanner.scan(configLocation);
 					if (count == 0 && logger.isDebugEnabled()) {
 						logger.debug("No component classes found for specified class/package [" + configLocation + "]");
