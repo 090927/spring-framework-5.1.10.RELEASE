@@ -449,7 +449,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 							}
 						});
 
-						// 获取给定 bean 的实例对象
+						/**
+						 * 获取给定 bean 的实例对象 {@link #getObjectForBeanInstance(Object, String, String, RootBeanDefinition)}
+						 */
 						bean = getObjectForBeanInstance(scopedInstance, name, beanName, mbd);
 					}
 					catch (IllegalStateException ex) {
@@ -1740,6 +1742,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			if (beanInstance instanceof NullBean) {
 				return beanInstance;
 			}
+
+			/**
+			 * 1、容器已经得到bean 实例对象，这个实例对象可能是一个 普通的bean。
+			 * 2、也可能是一个工厂bean，如果是一个工厂bean 则使用它创建一个bean 实例对象。
+			 * 3、如果调用本身就想获得容器引用，则返回工厂 bean的实例对象。
+			 */
 			if (!(beanInstance instanceof FactoryBean)) {
 				throw new BeanIsNotAFactoryException(beanName, beanInstance.getClass());
 			}
@@ -1748,22 +1756,33 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		// Now we have the bean instance, which may be a normal bean or a FactoryBean.
 		// If it's a FactoryBean, we use it to create a bean instance, unless the
 		// caller actually wants a reference to the factory.
+		/**
+		 * 如果 bean 实例不是工厂bean、或者指定名称是容器解引用。
+		 * 调用者获取对容器的引用时，直接返回当前的bean 实例。
+		 */
 		if (!(beanInstance instanceof FactoryBean) || BeanFactoryUtils.isFactoryDereference(name)) {
 			return beanInstance;
 		}
 
 		Object object = null;
 		if (mbd == null) {
+			// 从 bean 工厂缓存中获取指定名称的 bean实例对象。
 			object = getCachedObjectForFactoryBean(beanName);
 		}
 		if (object == null) {
 			// Return bean instance from factory.
 			FactoryBean<?> factory = (FactoryBean<?>) beanInstance;
 			// Caches object obtained from FactoryBean if it is a singleton.
+
+			// 从 bean 工厂生产bean 是单例模式，则缓存。
 			if (mbd == null && containsBeanDefinition(beanName)) {
+				// 从容器中获取指定 bean 定义信息，如果继承基类，则合并类的相关属性。
 				mbd = getMergedLocalBeanDefinition(beanName);
 			}
 			boolean synthetic = (mbd != null && mbd.isSynthetic());
+			/**
+			 * 实现工厂bean，生产 bean 实例对象。 {@link #getObjectFromFactoryBean(FactoryBean, String, boolean)}
+			 */
 			object = getObjectFromFactoryBean(factory, beanName, !synthetic);
 		}
 		return object;
