@@ -102,6 +102,7 @@ class BeanDefinitionValueResolver {
 	 * @return the resolved object
 	 *
 	 * 【 解析属性依赖注入规则 】
+	 * 1、Spring 引用类型、内部类及集合数组类型的属性进行解析。
 	 */
 	@Nullable
 	public Object resolveValueIfNecessary(Object argName, @Nullable Object value) {
@@ -171,7 +172,9 @@ class BeanDefinitionValueResolver {
 				}
 			}
 
-			// 创建指定类型的属性值。
+			/**
+			 * 解析 array 类型的属性值 {@link #resolveManagedArray(Object, List, Class)}
+			 */
 			return resolveManagedArray(argName, (List<?>) value, elementType);
 		}
 
@@ -421,10 +424,14 @@ class BeanDefinitionValueResolver {
 
 	/**
 	 * For each element in the managed array, resolve reference if necessary.
+	 *
+	 * 解析 array 类型的属性值
 	 */
 	private Object resolveManagedArray(Object argName, List<?> ml, Class<?> elementType) {
+		// 创建一个指定类型的数组，用于存放和返回解析后的数组。
 		Object resolved = Array.newInstance(elementType, ml.size());
 		for (int i = 0; i < ml.size(); i++) {
+			// 递归解析 array 每一个元素，并将解析后的值设置到 resolved 数组中，索引为: i
 			Array.set(resolved, i, resolveValueIfNecessary(new KeyedArgName(argName, i), ml.get(i)));
 		}
 		return resolved;

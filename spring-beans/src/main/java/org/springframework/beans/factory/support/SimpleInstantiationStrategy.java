@@ -58,7 +58,9 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 
 	/**
 	 * TODO 【 DI 】执行bean 实例化
-	 * @return
+	 *
+	 * 1、如果Bean 的方法被覆盖，使用CGLIB 进行实例化。
+	 * 		否则使用 JDK 的反射机制进行实例化。
 	 */
 	@Override
 	public Object instantiate(RootBeanDefinition bd, @Nullable String beanName, BeanFactory owner) {
@@ -98,15 +100,16 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 				}
 			}
 
-			// 使用 beanUtils 进行实例化，通过反射机制调用 “构造方法”.newInstance 进行实例化
+			/**
+			 * 使用 {@link BeanUtils#instantiateClass(Class)}  进行实例化，通过反射机制调用 “构造方法”.newInstance 进行实例化
+			 */
 			return BeanUtils.instantiateClass(constructorToUse);
 		}
 		else {
 			// Must generate CGLIB subclass.
 
 			/**
-			 * 使用 GCLIB 进行实例化对象。{@link CglibSubclassingInstantiationStrategy#instantiateWithMethodInjection(RootBeanDefinition, String, BeanFactory)} 
-			 * 
+			 * 使用 GCLIB 进行实例化对象。{@link CglibSubclassingInstantiationStrategy#instantiateWithMethodInjection(RootBeanDefinition, String, BeanFactory, Constructor, Object...)}
 			 */
 			return instantiateWithMethodInjection(bd, beanName, owner);
 		}

@@ -174,8 +174,21 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 */
 	@Nullable
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
+		// 如果加载不成功则再次尝试从 singletonFactories 中加载。因为在创建单例
 		Object singletonObject = this.singletonObjects.get(beanName);
+
+		/**
+		 * 1、spring 中创建 bean 的原则是不等bean 创建完成就会将创建bean 的objectFactory 提早曝光加入到缓存中。一旦下一个bean 创建需要依赖上一个bean
+		 * 2、对于获取单例不需要创建 ObjectFactory 对象。原型对象直接返回 ObjectFactory 对象提早加入缓存中。
+		 */
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
+
+			/**
+			 * 1、singletonObject： 用于保存BeanName 和 创建bean 实例之间的关系，beanName -> beanInstance
+			 * 2、singletonFactories 用于保存 BeanName 和创建 bean的工厂之间的关系。beanName -> ObjectFactory
+			 * 3、earlySingletonObject 也是保存 BeanName 和创建 bean 实例之前的关系。于 singletonObjects 的不同之处在于，当一个单例 bean 被放到这里后
+			 * 4、registeredSingletons 用来保存当前所有已注册的Bean。
+			 */
 			synchronized (this.singletonObjects) {
 				singletonObject = this.earlySingletonObjects.get(beanName);
 				if (singletonObject == null && allowEarlyReference) {
@@ -393,13 +406,24 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * to be destroyed before the given bean is destroyed.
 	 * @param beanName the name of the bean
 	 * @param dependentBeanName the name of the dependent bean
+	 *
+	 *  实现属性依赖注入
 	 */
 	public void registerDependentBean(String beanName, String dependentBeanName) {
+
+		// 处理 bean 名称，将别名转换为规范 bean 名称。
 		String canonicalName = canonicalName(beanName);
 
+		/**
+		 * 多线程同步，保证容器内数据一致性，在容器中通过，bean名称+全部依赖 bean 名称集合，查找指定名称 bean 依赖bean。
+		 */
 		synchronized (this.dependentBeanMap) {
 			Set<String> dependentBeans =
 					this.dependentBeanMap.computeIfAbsent(canonicalName, k -> new LinkedHashSet<>(8));
+
+			/**
+			 * 向容器中通过 bean 名称 -》全部依赖bean名称集合，添加 bean 的依赖信息。
+			 */
 			if (!dependentBeans.add(dependentBeanName)) {
 				return;
 			}
@@ -408,6 +432,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		synchronized (this.dependenciesForBeanMap) {
 			Set<String> dependenciesForBean =
 					this.dependenciesForBeanMap.computeIfAbsent(dependentBeanName, k -> new LinkedHashSet<>(8));
+
+			// 添加bean。
 			dependenciesForBean.add(canonicalName);
 		}
 	}

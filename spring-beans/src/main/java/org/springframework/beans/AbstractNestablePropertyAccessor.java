@@ -289,6 +289,12 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 	}
 
 	@SuppressWarnings("unchecked")
+	/**
+	 * 属性依赖注入
+	 * 1、对于集合类型的属性，将属性值解析为 目标类型的集合后直接。赋值给属性。
+	 * 2、对非目标集合类型的属性，大量使用 JDK 反射机制。通过其属性 getter() 方法获取执行属性注入前的值。
+	 * 		同时调用 setter() 方法为属性设置注入后的值。
+	 */
 	private void processKeyedProperty(PropertyTokenHolder tokens, PropertyValue pv) {
 		/**
 		 * 调用属性 getter() 获取属性值 {@link #getPropertyHoldingValue(PropertyTokenHolder)}
@@ -302,7 +308,9 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 		Assert.state(tokens.keys != null, "No token keys");
 		String lastKey = tokens.keys[tokens.keys.length - 1];
 
-		// 注入 array 类型的属性值。
+		/**
+		 * 【 注入 array 类型的属性值 】
+		 */
 		if (propValue.getClass().isArray()) {
 			Class<?> requiredType = propValue.getClass().getComponentType();
 			int arrayIndex = Integer.parseInt(lastKey);
@@ -335,7 +343,9 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 			}
 		}
 
-		// 注入List 类型
+		/**
+		 * 【 注入List 类型 】
+		 */
 		else if (propValue instanceof List) {
 
 			// 获取List 集合的类型
@@ -380,7 +390,9 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 			}
 		}
 
-		// map 类型
+		/**
+		 * 【 map 类型 】
+		 */
 		else if (propValue instanceof Map) {
 
 			//  获取map 集合 key 类型
@@ -498,6 +510,9 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 				}
 				pv.getOriginalPropertyValue().conversionNecessary = (valueToApply != originalValue);
 			}
+			/**
+			 *  {@link BeanWrapperImpl}
+			 */
 			ph.setValue(valueToApply);
 		}
 		catch (TypeMismatchException ex) {

@@ -258,6 +258,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		/**
 		 * 根据指定名称获取被管理bean 的名称，剥离指定名称中对容器相关依赖
 		 * 如果指定的是别名、将别名转换成规范的bean 名称。
+		 *
+		 *
+		 * 传入的参数name 其实不是BeanName.这里传入的参数可能是别名。也可能是 factoryBean .所以需要进行一些列的解析。
+		 *  - 去除 FactoryBean 的修饰符。也就是如果 name = "&aa", 那么会首先去除 &，而使用 name=“aa”
+		 *  - 取指定 alias 所表示的最终 beanName. 如果别名 A 指向名称B的bean, 则返回B，如别名A 指向别名B。别名B又指向名称C。bean 返回C
 		 */
 		final String beanName = transformedBeanName(name);
 		Object bean;
@@ -265,7 +270,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		// Eagerly check singleton cache for manually registered singletons.
 		/**
 		 * 先从缓存里读取是否已经有被创建过的单例模式的bean。
-		 * 对于单例bean，整个IOC 容器只创建一次，不需要重复创建。
+		 * 对于单例bean，整个IOC 容器只创建一次，不需要重复创建。{@link #getSingleton(String)}
 		 */
 		Object sharedInstance = getSingleton(beanName);
 		// IOC 容器创建单例模式 bean 实例对象。
@@ -282,7 +287,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 			}
 
-			// 获取给定bean 实例对象，主要完成 `FactoryBean` 相关处理
+			/**
+			 * 获取给定bean 实例对象，主要完成 `FactoryBean` 相关处理 {@link #getObjectForBeanInstance(Object, String, String, RootBeanDefinition)}
+			 */
 			bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		}
 
@@ -291,9 +298,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			// We're assumably within a circular reference.
 
 			/**
-			 * 1、缓存中没有正在创建单例 bean
-			 * 2、缓存中已经有原型模式 bean
-			 * 3、但是由于循环引用导致实例化对象失败。
+			 * 【 原型模式依赖检查 】
+			 *   1、使用 ThreadLocal 实现的转换为Set。查看BeanName 是否包含
+			 *   2、如果存在 A中又B 属性。B中又A属性。那么当注入的时候，就会产生当A 还未创建完的时候因为对于B的创建再次返回创建A。造成循环依赖。
 			 */
 			if (isPrototypeCurrentlyInCreation(beanName)) {
 				throw new BeanCurrentlyInCreationException(beanName);
@@ -302,7 +309,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			// Check if bean definition exists in this factory.
 
 			/**
-			 * 对IOC 容器是否存在指定名称 BeanDefinition 进行检查，
+			 * 对IOC 容器是否存在指定名称 BeanDefinition 进行检查。
 			 * 1、是否只能在当前 BeanFactory 中获取需要的 bean。如果不能则委托当前容器的父容器查找。
 			 * 2、如果还是找不到则沿着容器的继承体系，继续向父容器查找。
 			 */
@@ -342,7 +349,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 			try {
 
-				// 根据指定 bean，名称获取父级 bean 定义
+				/**
+				 * 根据指定 bean，名称获取父级 bean 定义
+				 *
+				 * 1、将存储XML 配置文件的 GernericBeanDefinition 转换为 RootBeanDefinition
+				 */
 				final RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
 				checkMergedBeanDefinition(mbd, beanName, args);
 
@@ -357,7 +368,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 									"Circular depends-on relationship between '" + beanName + "' and '" + dep + "'");
 						}
 
-						// 把依赖 bean 注册给当前依赖的 bean
+						/**
+						 * 把依赖 bean 注册给当前依赖的 bean {@link #registerDependentBean(String, String)}
+						 */
 						registerDependentBean(dep, beanName);
 						try {
 
@@ -373,7 +386,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 				// Create bean instance
 
-				// 创建单例模式的 bean 实例对象。
+				/**
+				 * 【 创建单例模式的 bean 实例对象 】
+				 */
 				if (mbd.isSingleton()) {
 
 					// 这里使用一个匿名内部类创建 bean 实例，并且注册给锁依赖的对象。
@@ -381,7 +396,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 						try {
 
 							/**
-							 * 创建一个指定 bean实例对象，如果有父级基础，则合并子类和父类的定义。
+							 * 创建一个指定 bean实例对象，如果有父级基础，则合并子类和父类的定义。{@link AbstractAutowireCapableBeanFactory#createBean(String, RootBeanDefinition, Object[])}
 							 */
 							return createBean(beanName, mbd, args);
 						}
@@ -396,11 +411,16 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 						}
 					});
 
-					// 获取给定 bean 的实例对象。
+					/**
+					 * 获取给定 Bean 的实例对象 {@link #getObjectForBeanInstance(Object, String, String, RootBeanDefinition)}
+					 */
 					bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
 
-				// IOC 容器创建原型模式的 bean 实例对象。
+				/**
+				 * 【 IOC 容器创建原型模式的 bean 实例对象 】
+				 *  原型: 每次创建，新的 Bean。
+				 */
 				else if (mbd.isPrototype()) {
 					// It's a prototype -> create a new instance.
 					Object prototypeInstance = null;
@@ -425,11 +445,14 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 						afterPrototypeCreation(beanName);
 					}
 
-					// 获取给定 bean 的实例对象
+					/**
+					 * 获取给定 bean 的实例对象 {@link #getObjectForBeanInstance(Object, String, String, RootBeanDefinition)}
+					 */
 					bean = getObjectForBeanInstance(prototypeInstance, name, beanName, mbd);
 				}
 
 				else {
+
 					/**
 					 * 要创建 bean即不是单例、也不是原型，则根据 bean 定义的资源中，配置的生命周期。选择实例化 bean。
 					 */
@@ -442,6 +465,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 						Object scopedInstance = scope.get(beanName, () -> {
 							beforePrototypeCreation(beanName);
 							try {
+								/**
+								 * 创建知道 bean 的对象实例。
+								 * 1、开始实例化 {@link AbstractAutowireCapableBeanFactory#createBean(String, RootBeanDefinition, Object[])}
+								 */
 								return createBean(beanName, mbd, args);
 							}
 							finally {
@@ -1306,6 +1333,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * @return a (potentially merged) RootBeanDefinition for the given bean
 	 * @throws NoSuchBeanDefinitionException if there is no bean with the given name
 	 * @throws BeanDefinitionStoreException in case of an invalid bean definition
+	 *
+	 * 		因为从 XML 配置文件中读到 Bean 信息是存储在GernericBeanDefinition 中。
+	 * 但是后续bean 后续处理都是针对 RootBeanDefinition 的。所以这里需要进行一个转换。同时转换如果父类不为空的话，会一并合并父类的属性
 	 */
 	protected RootBeanDefinition getMergedLocalBeanDefinition(String beanName) throws BeansException {
 		// Quick check on the concurrent map first, with minimal locking.
@@ -1733,6 +1763,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * @param beanName the canonical bean name
 	 * @param mbd the merged bean definition
 	 * @return the object to expose for the bean
+	 *
+	 *  获取给定 bean 实例对象
 	 */
 	protected Object getObjectForBeanInstance(
 			Object beanInstance, String name, String beanName, @Nullable RootBeanDefinition mbd) {
@@ -1744,7 +1776,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 
 			/**
-			 * 1、容器已经得到bean 实例对象，这个实例对象可能是一个 普通的bean。
+			 * 1、容器已经得到 bean 实例对象，这个实例对象可能是一个 普通的bean。
 			 * 2、也可能是一个工厂bean，如果是一个工厂bean 则使用它创建一个bean 实例对象。
 			 * 3、如果调用本身就想获得容器引用，则返回工厂 bean的实例对象。
 			 */
@@ -1763,6 +1795,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		if (!(beanInstance instanceof FactoryBean) || BeanFactoryUtils.isFactoryDereference(name)) {
 			return beanInstance;
 		}
+
+		/**
+		 * 1、如果从缓存中得到bean 的原始状态,则需要对bean 进行实例化。但是我们真正需要的工厂bean 中定义 factory-method 方法中返回的bean.
+		 * 2、根据 beanName 从缓存工厂中 获取bean 实例（getCachedObjectForFactoryBean 函数）
+		 * 		2.1、bean 工厂缓存: 【在 bean 工厂生产bean 实例对象 {@link FactoryBeanRegistrySupport#getObjectFromFactoryBean(FactoryBean, String, boolean)} 】
+		 */
 
 		Object object = null;
 		if (mbd == null) {

@@ -102,7 +102,7 @@ public abstract class AbstractPropertyAccessor extends TypeConverterSupport impl
 				// here, if there is a critical failure such as no matching field.
 				// We can attempt to deal only with less serious exceptions.
 				/**
-				 * 实现类 {@link AbstractNestablePropertyAccessor#setPropertyValues(PropertyValues)}
+				 * 实现类 {@link AbstractNestablePropertyAccessor#setPropertyValue(AbstractNestablePropertyAccessor.PropertyTokenHolder, PropertyValue)}
 				 */
 				setPropertyValue(pv);
 			}
