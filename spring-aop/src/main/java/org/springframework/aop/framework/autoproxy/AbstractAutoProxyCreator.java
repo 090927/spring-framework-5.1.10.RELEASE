@@ -290,12 +290,18 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * Create a proxy with the configured interceptors if the bean is
 	 * identified as one to proxy by the subclass.
 	 * @see #getAdvicesAndAdvisorsForBean
+	 *
+	 * Bean 初始化后置处理器。
 	 */
 	@Override
 	public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) {
 		if (bean != null) {
 			Object cacheKey = getCacheKey(bean.getClass(), beanName);
 			if (this.earlyProxyReferences.remove(cacheKey) != bean) {
+
+				/**
+				 * 【wrapIfNecessary】{@link #wrapIfNecessary(Object, String, Object)}
+				 */
 				return wrapIfNecessary(bean, beanName, cacheKey);
 			}
 		}
@@ -335,18 +341,32 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (StringUtils.hasLength(beanName) && this.targetSourcedBeans.contains(beanName)) {
 			return bean;
 		}
+
+		// 判断是否应该代理这个bean。
 		if (Boolean.FALSE.equals(this.advisedBeans.get(cacheKey))) {
 			return bean;
 		}
+
+		/**
+		 * 判断是否是一些 `InfrastructureClass` 或者是否应该跳过 Bean。
+		 * 1、InfrastructureClass 就是指 Advice、PointCut、Advisor 等接口的实现类
+		 * 2、shouldSkip 默认返回false。 由于是 protected 修饰的方法，子类可以覆盖。
+		 */
 		if (isInfrastructureClass(bean.getClass()) || shouldSkip(bean.getClass(), beanName)) {
 			this.advisedBeans.put(cacheKey, Boolean.FALSE);
 			return bean;
 		}
 
 		// Create proxy if we have advice.
+
+		// 获取 Bean 通知。
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
 		if (specificInterceptors != DO_NOT_PROXY) {
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);
+
+			/**
+			 * 创建代理 {@link #createProxy(Class, String, Object[], TargetSource)}
+			 */
 			Object proxy = createProxy(
 					bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
 			this.proxyTypes.put(cacheKey, proxy.getClass());
@@ -438,6 +458,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * already pre-configured to access the bean
 	 * @return the AOP proxy for the bean
 	 * @see #buildAdvisors
+	 *
+	 *  TODO 【AOP】~ 创建代理
 	 */
 	protected Object createProxy(Class<?> beanClass, @Nullable String beanName,
 			@Nullable Object[] specificInterceptors, TargetSource targetSource) {
@@ -468,6 +490,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			proxyFactory.setPreFiltered(true);
 		}
 
+		/**
+		 * 【 proxyFactory 】 {@link ProxyFactory#getProxy(ClassLoader)}
+		 */
 		return proxyFactory.getProxy(getProxyClassLoader());
 	}
 

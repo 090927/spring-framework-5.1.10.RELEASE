@@ -37,6 +37,8 @@ public final class GlobalAdvisorAdapterRegistry {
 
 	/**
 	 * Return the singleton {@link DefaultAdvisorAdapterRegistry} instance.
+	 *
+	 * GlobalAdvisorAdapterRegistry 类起适配器、单例模式的作用，提供了一个 `DefaultAdvisorAdapterRegistry` 完成通知的适配和注册过程。
 	 */
 	public static AdvisorAdapterRegistry getInstance() {
 		return instance;

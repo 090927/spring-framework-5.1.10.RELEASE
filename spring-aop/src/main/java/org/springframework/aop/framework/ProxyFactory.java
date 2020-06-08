@@ -107,6 +107,14 @@ public class ProxyFactory extends ProxyCreatorSupport {
 	 * @return the proxy object
 	 */
 	public Object getProxy(@Nullable ClassLoader classLoader) {
+		/**
+		 * 1、createAopProxy() 实现类 {@link DefaultAopProxyFactory#createAopProxy(AdvisedSupport)}
+		 *
+		 * 2、getProxy()
+		 * 	JDK {@link JdkDynamicAopProxy#getProxy(ClassLoader)}
+		 *
+		 * 	CGLIB {@link CglibAopProxy#getProxy(ClassLoader)}
+		 */
 		return createAopProxy().getProxy(classLoader);
 	}
 

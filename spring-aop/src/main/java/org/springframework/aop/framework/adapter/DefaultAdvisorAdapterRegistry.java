@@ -45,6 +45,8 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 
 	/**
 	 * Create a new DefaultAdvisorAdapterRegistry, registering well-known adapters.
+	 *
+	 * DefaultAdvisorAdapterRegistry 完成各种通知的适配和注册过程。
 	 */
 	public DefaultAdvisorAdapterRegistry() {
 		registerAdvisorAdapter(new MethodBeforeAdviceAdapter());
