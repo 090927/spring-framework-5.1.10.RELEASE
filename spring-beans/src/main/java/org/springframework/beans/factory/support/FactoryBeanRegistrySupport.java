@@ -97,7 +97,13 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 	 */
 	protected Object getObjectFromFactoryBean(FactoryBean<?> factory, String beanName, boolean shouldPostProcess) {
 
-		// bean 工厂是单例模式、并且 bean 工厂缓存中存在指定 名称 bean 实例对象
+
+		/*
+		 * FactoryBean 也有单例和非单例之分，针对不同类型的 FactoryBean，这里有两种处理方式：
+		 *   1. 单例 FactoryBean 生成的 bean 实例也认为是单例类型。需放入缓存中，供后续重复使用
+		 *   2. 非单例 FactoryBean 生成的 bean 实例则不会被放入缓存中，每次都会创建新的实例
+		 */
+
 		if (factory.isSingleton() && containsSingleton(beanName)) {
 
 			// 多线程同步、以防止数据不一致
@@ -105,8 +111,9 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 				// 直接从 bean 工厂缓存中获取指定名称 bean 实例对象。
 				Object object = this.factoryBeanObjectCache.get(beanName);
 				if (object == null) {
+
 					/**
-					 * 调用bean 工厂的获取对象方法生产指定 bean的实例对象。
+					 * 调用bean 工厂的获取对象方法生产指定 bean的实例对象。{@link #doGetObjectFromFactoryBean(FactoryBean, String)}
 					 */
 					object = doGetObjectFromFactoryBean(factory, beanName);
 					// Only post-process and store if not put there already during getObject() call above
@@ -123,6 +130,7 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 							}
 							beforeSingletonCreation(beanName);
 							try {
+								// 应用后置处理
 								object = postProcessObjectFromFactoryBean(object, beanName);
 							}
 							catch (Throwable ex) {
@@ -134,7 +142,10 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 							}
 						}
 
-						// 将生产的实例对象添加到 bean 工厂的缓存中。
+						/**
+						 * 这里的 beanName 对应于 FactoryBean 的实现类， FactoryBean 的实现类也会被实例化，并被缓存在 singletonObjects 中
+						 *  1、getSingleton(beanName) 获取
+						 */
 						if (containsSingleton(beanName)) {
 							this.factoryBeanObjectCache.put(beanName, object);
 						}
@@ -150,6 +161,7 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 			Object object = doGetObjectFromFactoryBean(factory, beanName);
 			if (shouldPostProcess) {
 				try {
+					// 应用后置处理
 					object = postProcessObjectFromFactoryBean(object, beanName);
 				}
 				catch (Throwable ex) {
@@ -175,6 +187,7 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 
 		Object object;
 		try {
+			// if 分支的逻辑是 Java 安全方面的代码，可以忽略，直接看 else 分支的代码
 			if (System.getSecurityManager() != null) {
 				AccessControlContext acc = getAccessControlContext();
 				try {
@@ -186,6 +199,7 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 				}
 			}
 			else {
+				// 调用工厂方法生成 bean 实例
 				object = factory.getObject();
 			}
 		}
@@ -198,7 +212,10 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 
 		// Do not accept a null value for a FactoryBean that's not fully
 		// initialized yet: Many FactoryBeans just return null then.
-		// 创建出来的实例对象为 null、或者因为单例对象正在创建而返回 null。
+
+		/*
+		 * 创建出来的实例对象为 null、或者因为单例对象正在创建而返回 null。
+		 */
 		if (object == null) {
 			if (isSingletonCurrentlyInCreation(beanName)) {
 				throw new BeanCurrentlyInCreationException(

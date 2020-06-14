@@ -1072,10 +1072,16 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 * Validate and prepare the method overrides defined for this bean.
 	 * Checks for existence of a method with the specified name.
 	 * @throws BeanDefinitionValidationException in case of validation failure
+	 *
+	 * 【 验证和准备 override 方法 】
+	 *
+	 *  当用户配置了 lookup-method 和 replace-method 时，Spring 需要对目标 bean 进行增强。
+	 *  在增强之前，需要做一些准备工作，也就是 prepareMethodOverrides 中的逻辑
 	 */
 	public void prepareMethodOverrides() throws BeanDefinitionValidationException {
 		// Check that lookup methods exist and determine their overloaded status.
 		if (hasMethodOverrides()) {
+			// 循环处理每个 MethodOverride 对象
 			getMethodOverrides().getOverrides().forEach(this::prepareMethodOverride);
 		}
 	}
@@ -1088,14 +1094,21 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 * @throws BeanDefinitionValidationException in case of validation failure
 	 */
 	protected void prepareMethodOverride(MethodOverride mo) throws BeanDefinitionValidationException {
+		// 获取方法名为 mo.getMethodName() 的方法数量，当方法重载时，count 的值就会大于1
 		int count = ClassUtils.getMethodCountForName(getBeanClass(), mo.getMethodName());
 		if (count == 0) {
+
+			// count = 0，表明根据方法名未找到相应的方法，此时抛出异常
 			throw new BeanDefinitionValidationException(
 					"Invalid method override: no method with name '" + mo.getMethodName() +
 					"' on class [" + getBeanClassName() + "]");
 		}
+
+		// 若 count = 1，表明仅存在已方法名为 mo.getMethodName()，这意味着方法不存在重载
 		else if (count == 1) {
 			// Mark override as not overloaded, to avoid the overhead of arg type checking.
+
+			// 方法不存在重载，则将 overloaded 成员变量设为 false
 			mo.setOverloaded(false);
 		}
 	}

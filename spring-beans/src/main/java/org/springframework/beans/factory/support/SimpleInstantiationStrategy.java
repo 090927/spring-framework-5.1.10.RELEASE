@@ -66,7 +66,7 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 	public Object instantiate(RootBeanDefinition bd, @Nullable String beanName, BeanFactory owner) {
 		// Don't override the class with CGLIB if no overrides.
 
-		// 如果bean 定义中没有方法覆盖，就不需要 CGLIB 父类的方法。
+		// 如果bean 定义中没有方法覆盖（lookup-method 或 replace-method），就不需要 CGLIB 父类的方法。
 		if (!bd.hasMethodOverrides()) {
 			Constructor<?> constructorToUse;
 			synchronized (bd.constructorArgumentLock) {
@@ -90,8 +90,12 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 									(PrivilegedExceptionAction<Constructor<?>>) clazz::getDeclaredConstructor);
 						}
 						else {
+
+							// 获取默认构造方法
 							constructorToUse = clazz.getDeclaredConstructor();
 						}
+
+						// 设置 resolvedConstructorOrFactoryMethod
 						bd.resolvedConstructorOrFactoryMethod = constructorToUse;
 					}
 					catch (Throwable ex) {
