@@ -1,8 +1,8 @@
 ### AOP
 #### 入口,
-- `BeanPostProcessor`
--  bean 实例化、依赖注入完成后。 
-    - `AbstractAutowireCapableBeanFactory # initializeBean()`
+- Bean 实例化后置处理 
+- `AbstractAutowireCapableBeanFactory # initializeBean()`
+    - 核心 `AbstractAutoProxyCreator # postProcessAfterInitialization()` 
     
 - `ProxyFactory` 代理工厂
     - `JdkDynamicAopProxy` JDK 代理

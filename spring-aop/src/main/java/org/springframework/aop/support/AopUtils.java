@@ -237,6 +237,10 @@ public abstract class AopUtils {
 			introductionAwareMethodMatcher = (IntroductionAwareMethodMatcher) methodMatcher;
 		}
 
+		/*
+		 * 查找当前类及其父类（以及父类的父类等等）所实现的接口，由于接口中的方法是 public，
+		 * 所以当前类可以继承其父类，和父类的父类中所有的接口方法
+		 */
 		Set<Class<?>> classes = new LinkedHashSet<>();
 		if (!Proxy.isProxyClass(targetClass)) {
 			classes.add(ClassUtils.getUserClass(targetClass));
@@ -281,6 +285,8 @@ public abstract class AopUtils {
 	 */
 	public static boolean canApply(Advisor advisor, Class<?> targetClass, boolean hasIntroductions) {
 		if (advisor instanceof IntroductionAdvisor) {
+
+			// 使用 ClassFilter 匹配 class
 			return ((IntroductionAdvisor) advisor).getClassFilter().matches(targetClass);
 		}
 		else if (advisor instanceof PointcutAdvisor) {
@@ -307,6 +313,10 @@ public abstract class AopUtils {
 		}
 		List<Advisor> eligibleAdvisors = new ArrayList<>();
 		for (Advisor candidate : candidateAdvisors) {
+
+			/**
+			 * 筛选 IntroductionAdvisor 类型的通知器 {@link canApply }
+			 */
 			if (candidate instanceof IntroductionAdvisor && canApply(candidate, clazz)) {
 				eligibleAdvisors.add(candidate);
 			}
@@ -317,6 +327,8 @@ public abstract class AopUtils {
 				// already processed
 				continue;
 			}
+
+			// 筛选普通类型的通知器
 			if (canApply(candidate, clazz, hasIntroductions)) {
 				eligibleAdvisors.add(candidate);
 			}

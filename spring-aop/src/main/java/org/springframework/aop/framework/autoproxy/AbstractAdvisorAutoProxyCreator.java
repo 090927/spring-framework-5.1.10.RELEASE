@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.springframework.aop.Advisor;
 import org.springframework.aop.TargetSource;
+import org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -74,7 +75,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 			Class<?> beanClass, String beanName, @Nullable TargetSource targetSource) {
 
 		/**
-		 *  {@link #findEligibleAdvisors(Class, String)}
+		 *   查找合适的通知器 {@link #findEligibleAdvisors(Class, String)}
 		 */
 		List<Advisor> advisors = findEligibleAdvisors(beanClass, beanName);
 		if (advisors.isEmpty()) {
@@ -94,8 +95,20 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 * @see #extendAdvisors
 	 */
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
+
+		/**
+		 * 查找所有的通知器 {@link AnnotationAwareAspectJAutoProxyCreator#findCandidateAdvisors()}
+		 */
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
+
+		/**
+		 * 筛选可应用在 beanClass 上的 Advisor，通过 ClassFilter 和 MethodMatcher
+		 * 对目标类和方法进行匹配
+		 * {@link #findAdvisorsThatCanApply()}
+		 */
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
+
+		// 拓展操作
 		extendAdvisors(eligibleAdvisors);
 		if (!eligibleAdvisors.isEmpty()) {
 			/**
@@ -112,6 +125,10 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 */
 	protected List<Advisor> findCandidateAdvisors() {
 		Assert.state(this.advisorRetrievalHelper != null, "No BeanFactoryAdvisorRetrievalHelper available");
+
+		/**
+		 * 即从 bean 容器中将 Advisor 类型的 bean 查找出来 {@link BeanFactoryAdvisorRetrievalHelper#findAdvisorBeans()}
+		 */
 		return this.advisorRetrievalHelper.findAdvisorBeans();
 	}
 
@@ -129,6 +146,8 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 
 		ProxyCreationContext.setCurrentProxiedBeanName(beanName);
 		try {
+
+			// 调用重载方法
 			return AopUtils.findAdvisorsThatCanApply(candidateAdvisors, beanClass);
 		}
 		finally {

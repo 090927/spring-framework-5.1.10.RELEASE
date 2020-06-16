@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 
 import org.springframework.aop.Advisor;
 import org.springframework.aop.aspectj.autoproxy.AspectJAwareAdvisorAutoProxyCreator;
+import org.springframework.aop.framework.autoproxy.AbstractAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.lang.Nullable;
@@ -86,12 +87,26 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
 	}
 
 
+	/**
+	 * 查询所有通知器
+	 *
+	 * 1、从容器中查找所有类型为 Advisor 的 bean 对应的名称
+	 * 2、遍历 advisorNames，并从容器中获取对应的 bean
+	 */
 	@Override
 	protected List<Advisor> findCandidateAdvisors() {
 		// Add all the Spring advisors found according to superclass rules.
+
+		/**
+		 * 调用父类方法从容器中查找所有的通知器 {@link AbstractAdvisorAutoProxyCreator#findCandidateAdvisors()}
+		 */
 		List<Advisor> advisors = super.findCandidateAdvisors();
 		// Build Advisors for all AspectJ aspects in the bean factory.
 		if (this.aspectJAdvisorsBuilder != null) {
+
+			/**
+			 *  解析 @Aspect 注解，并构建通知器 {@link BeanFactoryAspectJAdvisorsBuilder#buildAspectJAdvisors()}
+			 */
 			advisors.addAll(this.aspectJAdvisorsBuilder.buildAspectJAdvisors());
 		}
 		return advisors;
