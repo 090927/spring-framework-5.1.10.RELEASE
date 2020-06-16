@@ -76,6 +76,8 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 
 		/**
 		 *   查找合适的通知器 {@link #findEligibleAdvisors(Class, String)}
+		 *   1、查找所有通知器
+		 *   2、筛选后，对目标类和方法，进行匹配。
 		 */
 		List<Advisor> advisors = findEligibleAdvisors(beanClass, beanName);
 		if (advisors.isEmpty()) {
@@ -98,13 +100,14 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 
 		/**
 		 * 查找所有的通知器 {@link AnnotationAwareAspectJAutoProxyCreator#findCandidateAdvisors()}
+		 * 1、从父类方法从容器中获取。
+		 * 2、解析 @Aspect
 		 */
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
 
 		/**
 		 * 筛选可应用在 beanClass 上的 Advisor，通过 ClassFilter 和 MethodMatcher
-		 * 对目标类和方法进行匹配
-		 * {@link #findAdvisorsThatCanApply()}
+		 * 对目标类和方法进行匹配 {@link #findAdvisorsThatCanApply(List, Class, String)}
 		 */
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
 
@@ -122,6 +125,10 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	/**
 	 * Find all candidate Advisors to use in auto-proxying.
 	 * @return the List of candidate Advisors
+	 *
+	 * 1、从容器中先获取 Advisor 类型的 BeanName,
+	 * 2、`this.beanFactory.getBean(name, Advisor.class)` 中获取Bean 实例。
+	 *
 	 */
 	protected List<Advisor> findCandidateAdvisors() {
 		Assert.state(this.advisorRetrievalHelper != null, "No BeanFactoryAdvisorRetrievalHelper available");

@@ -128,7 +128,9 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 
 		List<Advisor> advisors = new ArrayList<>();
 
-		// getAdvisorMethods 用于返回不包含 @Pointcut 注解的方法
+		/**
+		 * getAdvisorMethods 用于返回不包含 @Pointcut 注解的方法
+		 */
 		for (Method method : getAdvisorMethods(aspectClass)) {
 
 			/**
@@ -193,8 +195,8 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 	}
 
 	/**
-	 * 一个是获取 AspectJ 表达式切点，
-	 * 另一个是创建 Advisor 实现类
+	 * 1、一个是获取 AspectJ 表达式切点。
+	 * 2、另一个是创建 Advisor 实现类
 	 */
 	@Override
 	@Nullable
@@ -219,6 +221,12 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 				this, aspectInstanceFactory, declarationOrderInAspect, aspectName);
 	}
 
+	/**
+	 * 获取，AspectJ 表达式切点。
+	 * @param candidateAdviceMethod
+	 * @param candidateAspectClass
+	 * @return
+	 */
 	@Nullable
 	private AspectJExpressionPointcut getPointcut(Method candidateAdviceMethod, Class<?> candidateAspectClass) {
 
