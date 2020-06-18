@@ -52,6 +52,8 @@ public class BeanNameUrlHandlerMapping extends AbstractDetectingUrlHandlerMappin
 
 	/**
 	 * Checks name and aliases of the given bean for URLs, starting with "/".
+	 *
+	 * 建立所有 URL 和 Controller 的对应关系。
 	 */
 	@Override
 	protected String[] determineUrlsForHandler(String beanName) {

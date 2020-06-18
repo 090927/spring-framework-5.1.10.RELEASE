@@ -46,7 +46,7 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 	/**
 	 * Create a new DefaultAdvisorAdapterRegistry, registering well-known adapters.
 	 *
-	 * DefaultAdvisorAdapterRegistry 完成各种通知的适配和注册过程。
+	 * 【 DefaultAdvisorAdapterRegistry 完成各种通知的适配和注册过程 】
 	 */
 	public DefaultAdvisorAdapterRegistry() {
 		registerAdvisorAdapter(new MethodBeforeAdviceAdapter());
@@ -111,6 +111,10 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 		return interceptors.toArray(new MethodInterceptor[0]);
 	}
 
+	/**
+	 * 注册通知。
+	 * @param adapter an AdvisorAdapter that understands particular Advisor or Advice types
+	 */
 	@Override
 	public void registerAdvisorAdapter(AdvisorAdapter adapter) {
 		this.adapters.add(adapter);

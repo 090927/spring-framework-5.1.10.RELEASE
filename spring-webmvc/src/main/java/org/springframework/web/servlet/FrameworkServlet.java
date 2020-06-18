@@ -530,7 +530,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 
 		try {
 			/**
-			 * 【 initWebApplicationContext 】 初始化 web 容器
+			 * 【 initWebApplicationContext 】 初始化 web 容器 {@link #initWebApplicationContext()}
 			 */
 			this.webApplicationContext = initWebApplicationContext();
 			initFrameworkServlet();

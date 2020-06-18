@@ -62,9 +62,11 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 		// but we need to preserve order in the ultimate list.
 
 		/**
+		 * TODO 注册通知
 		 * 注册一系列， AdvisorAdapter 用于将 Advisor 转化成 MethodInterceptor
-		 *  实现类 {@link DefaultAdvisorAdapterRegistry#DefaultAdvisorAdapterRegistry()}
+		 *  	`GlobalAdvisorAdapterRegistry.getInstance();` 提供 `DefaultAdvisorAdapterRegistry`
 		 *
+		 *  实现类 {@link DefaultAdvisorAdapterRegistry#DefaultAdvisorAdapterRegistry()}
 		 */
 
 		// registry 为 DefaultAdvisorAdapterRegistry 类型
