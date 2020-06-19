@@ -1058,6 +1058,7 @@ public class DispatcherServlet extends FrameworkServlet {
 					}
 				}
 
+				// 执行拦截器 preHandle 方法
 				if (!mappedHandler.applyPreHandle(processedRequest, response)) {
 					return;
 				}
@@ -1073,8 +1074,10 @@ public class DispatcherServlet extends FrameworkServlet {
 					return;
 				}
 
-				// 结果视图对象的处理。
+				// 如果 controller 未返回 view 名称，这里生成默认的 view 名称。
 				applyDefaultViewName(processedRequest, mv);
+
+				// 执行拦截器 preHandle 方法
 				mappedHandler.applyPostHandle(processedRequest, response, mv);
 			}
 			catch (Exception ex) {
@@ -1085,6 +1088,10 @@ public class DispatcherServlet extends FrameworkServlet {
 				// making them available for @ExceptionHandler methods and other scenarios.
 				dispatchException = new NestedServletException("Handler dispatch failed", err);
 			}
+
+			/**
+			 * 解析并渲染视图 {@link #processDispatchResult(HttpServletRequest, HttpServletResponse, HandlerExecutionChain, ModelAndView, Exception)}
+			 */
 			processDispatchResult(processedRequest, response, mappedHandler, mv, dispatchException);
 		}
 		catch (Exception ex) {
@@ -1148,6 +1155,10 @@ public class DispatcherServlet extends FrameworkServlet {
 
 		// Did the handler return a view to render?
 		if (mv != null && !mv.wasCleared()) {
+
+			/**
+			 *  渲染视图 {@link #render(ModelAndView, HttpServletRequest, HttpServletResponse)}
+			 */
 			render(mv, request, response);
 			if (errorView) {
 				WebUtils.clearErrorRequestAttributes(request);
@@ -1376,9 +1387,16 @@ public class DispatcherServlet extends FrameworkServlet {
 		response.setLocale(locale);
 
 		View view;
+
+		/*
+		 * 若 mv 中的 view 是 String 类型，即处理器返回的是模板名称，
+		 * 这里将其解析为具体的 View 对象
+		 */
 		String viewName = mv.getViewName();
 		if (viewName != null) {
 			// We need to resolve the view name.
+
+			// 解析视图，对应步骤
 			view = resolveViewName(viewName, mv.getModelInternal(), locale, request);
 			if (view == null) {
 				throw new ServletException("Could not resolve view with name '" + mv.getViewName() +
@@ -1402,6 +1420,8 @@ public class DispatcherServlet extends FrameworkServlet {
 			if (mv.getStatus() != null) {
 				response.setStatus(mv.getStatus().value());
 			}
+
+			// 渲染视图，并将结果返回给用户
 			view.render(mv.getModelInternal(), request, response);
 		}
 		catch (Exception ex) {

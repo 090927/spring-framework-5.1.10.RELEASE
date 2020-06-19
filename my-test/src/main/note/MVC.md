@@ -3,3 +3,9 @@
 
 ### Controller 和 URL 对应关系
 - `AbstractDetectingUrlHandlerMapping #detectHandlers()`
+
+#### WEB 容器初始化
+- `ContextLoaderListener # contextInitialized()`
+
+##### 加载容器类型
+- `读取-》 ContextLoader.properties 文件`

@@ -561,15 +561,28 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * @see #FrameworkServlet(WebApplicationContext)
 	 * @see #setContextClass
 	 * @see #setContextConfigLocation
-	 * 初始化Web容器。
+	 *
+	 * 【 初始化Web容器 】
 	 */
 	protected WebApplicationContext initWebApplicationContext() {
-		// 先从 ServletContext 中获取父容器 WebApplicationContext
+		// 从 ServletContext 中获取容器，也就是 ContextLoaderListener 创建的容器
 		WebApplicationContext rootContext =
 				WebApplicationContextUtils.getWebApplicationContext(getServletContext());
 		// 声明子容器。
 		WebApplicationContext wac = null;
-		// 建立父、子容器之间关系。
+
+
+		/*
+		 * 若下面的条件成立，则需要从外部设置 webApplicationContext。有两个途径可以设置
+		 * webApplicationContext，以 DispatcherServlet 为例：
+		 *    1. 通过 DispatcherServlet 有参构造方法传入 WebApplicationContext 对象
+		 *    2. 将 DispatcherServlet 配置到其他容器中，由其他容器通过
+		 *       setApplicationContext 方法进行设置
+		 *
+		 * 途径1 可参考 AbstractDispatcherServletInitializer 中的
+		 * registerDispatcherServlet 方法源码。一般情况下，代码执行到此处，
+		 * this.webApplicationContext 为 null，大家可自行调试进行验证。
+		 */
 		if (this.webApplicationContext != null) {
 			// A context instance was injected at construction time -> use it
 			wac = this.webApplicationContext;
@@ -581,8 +594,12 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 					if (cwac.getParent() == null) {
 						// The context instance was injected without an explicit parent -> set
 						// the root application context (if any; may be null) as the parent
+
+						// 设置 rootContext 为父容器
 						cwac.setParent(rootContext);
 					}
+
+					// 配置并刷新容器
 					configureAndRefreshWebApplicationContext(cwac);
 				}
 			}
@@ -602,8 +619,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			// No context instance is defined for this servlet -> create a local one
 
 			/**
-			 * 给创建好的容器赋值
-			 *  {@link #createWebApplicationContext(ApplicationContext)}
+			 * 创建容器，并将 rootContext 作为父容器 {@link #createWebApplicationContext(ApplicationContext)}
 			 */
 			wac = createWebApplicationContext(rootContext);
 		}
@@ -625,6 +641,8 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		if (this.publishContext) {
 			// Publish the context as a servlet context attribute.
 			String attrName = getServletContextAttributeName();
+
+			// 将创建好的容器设置到 ServletContext 中
 			getServletContext().setAttribute(attrName, wac);
 		}
 
@@ -671,8 +689,12 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * @param parent the parent ApplicationContext to use, or {@code null} if none
 	 * @return the WebApplicationContext for this servlet
 	 * @see org.springframework.web.context.support.XmlWebApplicationContext
+	 *
+	 *  【创建Web 容器】
 	 */
 	protected WebApplicationContext createWebApplicationContext(@Nullable ApplicationContext parent) {
+
+		// 获取容器类型，默认为 XmlWebApplicationContext.class
 		Class<?> contextClass = getContextClass();
 		if (!ConfigurableWebApplicationContext.class.isAssignableFrom(contextClass)) {
 			throw new ApplicationContextException(
@@ -680,6 +702,8 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 					"': custom WebApplicationContext class [" + contextClass.getName() +
 					"] is not of type ConfigurableWebApplicationContext");
 		}
+
+		// 通过反射实例化容器
 		ConfigurableWebApplicationContext wac =
 				(ConfigurableWebApplicationContext) BeanUtils.instantiateClass(contextClass);
 
@@ -689,6 +713,10 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		if (configLocation != null) {
 			wac.setConfigLocation(configLocation);
 		}
+
+		/**
+		 * 配置并刷新容器 {@link #configureAndRefreshWebApplicationContext(ConfigurableWebApplicationContext)}
+		 */
 		configureAndRefreshWebApplicationContext(wac);
 
 		return wac;
@@ -698,11 +726,15 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		if (ObjectUtils.identityToString(wac).equals(wac.getId())) {
 			// The application context id is still set to its original default value
 			// -> assign a more useful id based on available information
+
+			// 设置容器 id
 			if (this.contextId != null) {
 				wac.setId(this.contextId);
 			}
 			else {
 				// Generate default id...
+
+				// 生成默认 id
 				wac.setId(ConfigurableWebApplicationContext.APPLICATION_CONTEXT_ID_PREFIX +
 						ObjectUtils.getDisplayString(getServletContext().getContextPath()) + '/' + getServletName());
 			}
