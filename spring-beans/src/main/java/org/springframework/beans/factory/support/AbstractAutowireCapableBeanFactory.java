@@ -419,6 +419,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			/**
 			 * 1、调用 Bean 实例所有后置处理中 `初始化前` 的处理方法。
 			 * 2、为 bean 实例对象在初始化之前做一些 自定义的处理。
+			 * bean 实例化之前
+			 * @see org.springframework.context.support.ApplicationContextAwareProcessor#postProcessBeforeInitialization(Object, String)
 			 */
 			Object current = processor.postProcessBeforeInitialization(result, beanName);
 			if (current == null) {
@@ -638,6 +640,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
+
+					/**
+					 * 处理合并后的 BeanDefinition.
+					 */
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -672,7 +678,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 						"' to allow for resolving potential circular references");
 			}
 
-			// 这里是一个匿名内部类，为防止循环引用，尽早持有对象的引用。
+			// 这里是一个匿名内部类，为防止循环引用，尽早持有对象的引用。提前：暴露出一个工厂。
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
@@ -1690,6 +1696,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				}
 			}
 		}
+
+		// for 执行完之后，属性完成注入。
 		if (needsDepCheck) {
 			if (filteredPds == null) {
 				filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);

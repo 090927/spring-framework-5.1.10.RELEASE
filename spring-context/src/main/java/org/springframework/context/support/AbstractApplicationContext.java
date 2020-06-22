@@ -573,6 +573,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
+
 				/**
 				 * 初始化所有剩余单例bean {@link #finishBeanFactoryInitialization(ConfigurableListableBeanFactory)}
 				 */
@@ -888,6 +889,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	/**
 	 * Finish the initialization of this context's bean factory,
 	 * initializing all remaining singleton beans.
+	 *
+	 * 实例化所有扫描出来的类
 	 */
 	protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
 		// Initialize conversion service for this context.

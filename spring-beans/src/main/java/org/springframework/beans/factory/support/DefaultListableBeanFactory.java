@@ -860,6 +860,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					}
 				}
 				else {
+
+					/**
+					 * 触发 bean 实例化和依赖注入 {@link #getBean(String)}
+					 */
 					getBean(beanName);
 				}
 			}
