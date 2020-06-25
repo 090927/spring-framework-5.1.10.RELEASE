@@ -456,7 +456,10 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 
 		/**
 		 * 准备文档对象。
-		 * {@link DefaultDocumentLoader#loadDocument(InputSource, EntityResolver, ErrorHandler, int, boolean)}
+		 * 委托了DocumentLoader来加载Document，具体实现 {@link DefaultDocumentLoader#loadDocument(InputSource, EntityResolver, ErrorHandler, int, boolean)}
+		 *
+		 *  1、{@link #getEntityResolver() 返回指定的解析器，如果没有指定，则构造一个未指定的默认解析器。
+		 *  2、{@link #getValidationModeForResource} 方法来获取对应资源的验证模式
 		 */
 		return this.documentLoader.loadDocument(inputSource, getEntityResolver(), this.errorHandler,
 				getValidationModeForResource(resource), isNamespaceAware());
@@ -542,7 +545,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		// 得到 BeanDefinitionDocumentReader 来对 XML 格式BeanDefault 进行解析。
 		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
 
-		// 获得容器中注册的 bean 数量
+		// 获得容器中注册的 bean 数量，【 统计注册前 Bean 个数】
 		int countBefore = getRegistry().getBeanDefinitionCount();
 
 		/**

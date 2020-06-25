@@ -1,5 +1,18 @@
 ## IOC
 
+### 资源
+- `Resource` 定义统一资源。
+- `ResourceLoader` 定义资源加载。
+    - `DefaultResourceLoader` 是默认实现
+        -  `ClassRelativeResourceLoader` 扩展的功能是，可以根据给定的class 所在包或者所在包的子包下加载资源。
+
+#### 常用注解解析器
+- `ConfigurationClassPostProcessor` 解析 `@Configuration` 注解类
+- `AutowiredAnnotationBeanPostProcessor` 解析 `@Autowired/@Value` 注解
+- `RequiredAnnotationBeanPostProcessor` 解析 `@Required` 注解
+- `CommonAnnotationBeanPostProcessor` 解析 `@PostConstruct @PreDestroy @Resource` 注解
+- `PersistenceAnnotationBeanPostProcessor` 解析JPA注解，持久层
+
 ### BeanFactory
 - `DefaultListableBeanFactory`
 

@@ -400,7 +400,7 @@ public class BeanDefinitionParserDelegate {
 	 * if there were errors during parse. Errors are reported to the
 	 * {@link org.springframework.beans.factory.parsing.ProblemReporter}.
 	 *
-	 * TODO IOC ~ 解析 <bean> 元素的入口
+	 * TODO IOC ~ 将 Element 解析为 `BeanDefinitionHolder`
 	 */
 	@Nullable
 	public BeanDefinitionHolder parseBeanDefinitionElement(Element ele) {
@@ -416,10 +416,13 @@ public class BeanDefinitionParserDelegate {
 	 */
 	@Nullable
 	public BeanDefinitionHolder parseBeanDefinitionElement(Element ele, @Nullable BeanDefinition containingBean) {
-		// 获取ID 属性值。
+		// 获取 ID 属性值。
 		String id = ele.getAttribute(ID_ATTRIBUTE);
+
+		// 获取 name 属性。
 		String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);
 
+		// 分割name属性 这里是实现了多个name配置的解析，可以是`,; `作为分割
 		List<String> aliases = new ArrayList<>();
 		// bean 元素中，所有 name 属性值存放到 别名中。
 		if (StringUtils.hasLength(nameAttr)) {
@@ -438,19 +441,21 @@ public class BeanDefinitionParserDelegate {
 		}
 
 		if (containingBean == null) {
-			// 检测《bean》元素所配置的 ID、name,或别名是否重复。
+			/**
+			 * 检测《bean》元素所配置的 ID、name,或别名是否重复。
+			 */
 			checkNameUniqueness(beanName, aliases, ele);
 		}
 
 		/**
-		 * 详细对《bean》元素中bean 定义进行解析
-		 *
-		 * {@link #parseBeanDefinitionElement(Element, String, BeanDefinition)}
+		 * 详细对《bean》元素中 bean 定义进行解析 {@link #parseBeanDefinitionElement(Element, String, BeanDefinition)}
 		 */
 		AbstractBeanDefinition beanDefinition = parseBeanDefinitionElement(ele, beanName, containingBean);
 		if (beanDefinition != null) {
 			if (!StringUtils.hasText(beanName)) {
 				try {
+
+					// 如果不存在beanName那么根据Spring中提供的命名规则为当前的bean生成对应的beanName
 					if (containingBean != null) {
 
 						// 没有 ID、name 且没有包含子元素、则解析Bean 生成一个唯一的beanName 并注册。
@@ -464,6 +469,7 @@ public class BeanDefinitionParserDelegate {
 						// Register an alias for the plain bean class name, if still possible,
 						// if the generator returned the class name plus a suffix.
 						// This is expected for Spring 1.2/2.0 backwards compatibility.
+
 						// 为解析的 Bean 使用别名注册时，为了向后兼容。
 						String beanClassName = beanDefinition.getBeanClassName();
 						if (beanClassName != null &&
@@ -1485,18 +1491,31 @@ public class BeanDefinitionParserDelegate {
 	 * @param ele the element to parse
 	 * @param containingBd the containing bean definition (if any)
 	 * @return the resulting bean definition
+	 *
+	 * 【 自定义标签解析 】
 	 */
 	@Nullable
 	public BeanDefinition parseCustomElement(Element ele, @Nullable BeanDefinition containingBd) {
+		// 获取xml配置文件中的命名空间http://www.springframework.org/schema/context
 		String namespaceUri = getNamespaceURI(ele);
 		if (namespaceUri == null) {
 			return null;
 		}
+
+		/**
+		 * 根据命名空间找到命名空间处理类 , 所以得到的命名空间处理类是 {@link org.springframework.context.config.ContextNamespaceHandler}
+		 *
+		 *
+		 */
 		NamespaceHandler handler = this.readerContext.getNamespaceHandlerResolver().resolve(namespaceUri);
 		if (handler == null) {
 			error("Unable to locate Spring NamespaceHandler for XML schema namespace [" + namespaceUri + "]", ele);
 			return null;
 		}
+
+		/**
+		 * 解析命名空间支持的标签 真正实现 {@link org.springframework.context.annotation.ComponentScanBeanDefinitionParser#parse(Element, ParserContext)}
+		 */
 		return handler.parse(ele, new ParserContext(this.readerContext, this, containingBd));
 	}
 

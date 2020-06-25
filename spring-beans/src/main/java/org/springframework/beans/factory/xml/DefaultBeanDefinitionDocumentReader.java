@@ -56,6 +56,8 @@ import org.springframework.util.StringUtils;
  * @author Rob Harrop
  * @author Erik Wiersma
  * @since 18.12.2003
+ *
+ * Document 读取器。
  */
 public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocumentReader {
 
@@ -91,7 +93,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 * <p>Opens a DOM Document; then initializes the default settings
 	 * specified at the {@code <beans/>} level; then parses the contained bean definitions.
 	 *
-	 * TODO IOC 【3、注册阶段】~ 将配置载入内存
+	 * TODO IOC 【3、注册阶段】~ 将配置解析成 BeanDefinition 并注册。
 	 */
 	@Override
 	public void registerBeanDefinitions(Document doc, XmlReaderContext readerContext) {
@@ -99,7 +101,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		this.readerContext = readerContext;
 
 		/**
-		 *  解析bean 文档对象 {@link #doRegisterBeanDefinitions(Element)}
+		 *  【核心逻辑】解析bean 文档对象 {@link #doRegisterBeanDefinitions(Element)}
 		 */
 		doRegisterBeanDefinitions(doc.getDocumentElement());
 	}
@@ -145,6 +147,10 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		this.delegate = createDelegate(getReaderContext(), root, parent);
 
 		if (this.delegate.isDefaultNamespace(root)) {
+
+			/*
+			 * 检查是否定义了profile属性，如果定义了需要到环境变量中找，利用这个特性我们可以在配置文件中部署不同的环境
+			 */
 			String profileSpec = root.getAttribute(PROFILE_ATTRIBUTE);
 			if (StringUtils.hasText(profileSpec)) {
 				String[] specifiedProfiles = StringUtils.tokenizeToStringArray(
@@ -160,15 +166,20 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 				}
 			}
 		}
-		// 在解析 Bean 定义之前，进行自定义解析，增强解析过程可扩展性。
+		/*
+		 * 在解析 Bean 定义之前，进行自定义解析，增强解析过程可扩展性。由子类实现。
+		 */
 		preProcessXml(root);
 
 		/**
 		 *  使用 Spring 的Bean 规则从文档的根元素开始
-		 *  	bean 定义的文档对象的解析 {@link #parseBeanDefinitions(Element, BeanDefinitionParserDelegate)}
+		 *  【核心】bean 定义的文档对象的解析并注册 {@link #parseBeanDefinitions(Element, BeanDefinitionParserDelegate)}
 		 */
 		parseBeanDefinitions(root, this.delegate);
-		// 在解析 bean 定义之后，进行自定义解析，增加解析过程的可扩展性。
+
+		/*
+		 * 在解析 bean 定义之后，进行自定义解析，增加解析过程的可扩展性。由子类实现
+		 */
 		postProcessXml(root);
 
 		this.delegate = parent;
@@ -198,7 +209,10 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 *  使用 Spring 的Bean 规则从文档的跟元素开始 bean 定义的文档对象的解析
 	 */
 	protected void parseBeanDefinitions(Element root, BeanDefinitionParserDelegate delegate) {
-		// bean 定义的文档对象使用 Spring 默认的 xml 命名空间
+
+		/*
+		 * bean 定义的文档对象使用,是默认命名空间 xmlns="http://www.springframework.org/schema/beans"
+		 */
 		if (delegate.isDefaultNamespace(root)) {
 			// 获取 bean 定义文档的 跟元素的所有子节点。
 			NodeList nl = root.getChildNodes();
@@ -209,7 +223,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 				if (node instanceof Element) {
 					Element ele = (Element) node;
 
-					// 定义文档元素节点使用，Spring 默认的 XML 命名空间。
+					// 默认标签解析 如<bean class=""/>
 					if (delegate.isDefaultNamespace(ele)) {
 
 						/**
@@ -219,30 +233,31 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 					}
 					else {
 
-						// 如果没有使用 Spring 默认的 XML 命名空间，则使用用户自定义的解析规则解析元素节点。
+						/**
+						 * 如果没有使用 Spring 默认的 XML 命名空间，则使用用户自定义的解析规则解析元素节点。{@link BeanDefinitionParserDelegate#parseCustomElement(Element)}
+						 */
 						delegate.parseCustomElement(ele);
 					}
 				}
 			}
 		}
 		else {
-			/**
-			 * 文档的根节点，没有使用 Spring 默认命名空间，使用自定义 的解析规则解析文档的根节点。
+
+			/*
+			 * 文档的根节点，没有使用 Spring 默认命名空间（xmlns="http://www.springframework.org/schema/beans"）使用自定义 的解析规则解析文档的根节点。
 			 */
 			delegate.parseCustomElement(root);
 		}
 	}
 
 	/**
-	 * 使用 Spring Bean 规则解析元素节点
+	 * 使用 Spring Bean 规则解析元素节点, 【 默认标签解析 】
 	 * TODO IOC 解析 <import>、<alias>、<bean> 元素
 	 */
 	private void parseDefaultElement(Element ele, BeanDefinitionParserDelegate delegate) {
 
 		/**
-		 * 解析<import> 导入元素
-		 *
-		 * {@link #importBeanDefinitionResource
+		 * 解析<import> 导入元素 {@link #importBeanDefinitionResource
 		 */
 		if (delegate.nodeNameEquals(ele, IMPORT_ELEMENT)) {
 			importBeanDefinitionResource(ele);
@@ -258,7 +273,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		}
 
 		/**
-		 * 【 注册IOC容器 】
+		 * 【最重要 ~ 注册IOC容器 】
 		 *  解析 <bean> 元素，按照Spring 的Bean 规则进行解析 {@link #processBeanDefinition
 		 */
 		else if (delegate.nodeNameEquals(ele, BEAN_ELEMENT)) {
@@ -307,7 +322,9 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		// 给定导入元素，location 是绝对路径。
 		if (absoluteLocation) {
 			try {
-				// 使用资源读入器加载给定路径的 bean 资源。
+				/**
+				 * 使用资源读入器加载给定路径的 bean 资源。{@link org.springframework.beans.factory.support.AbstractBeanDefinitionReader#loadBeanDefinitions(String, Set)}
+				 */
 				int importCount = getReaderContext().getReader().loadBeanDefinitions(location, actualResources);
 				if (logger.isTraceEnabled()) {
 					logger.trace("Imported " + importCount + " bean definitions from URL location [" + location + "]");
@@ -333,7 +350,10 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 				else {
 					//  获取spring IOC 容器资源读入器的基本路径
 					String baseLocation = getReaderContext().getResource().getURL().toString();
-					// 根据 spring IOC 容器，读入器基本路径加载给定导入路径的资源。
+
+					/**
+					 * 根据 spring IOC 容器，读入器基本路径加载给定导入路径的资源。{@link org.springframework.beans.factory.support.AbstractBeanDefinitionReader#loadBeanDefinitions(String, Set)}
+					 */
 					importCount = getReaderContext().getReader().loadBeanDefinitions(
 							StringUtils.applyRelativePath(baseLocation, location), actualResources);
 				}
@@ -397,7 +417,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		/**
 		 *  1、BeanDefinitionHolder 对 BeanDefinition 封装，即Bean 定义的封装类。
 		 *
-		 *  {@link BeanDefinitionParserDelegate#parseBeanDefinitionElement(Element)}
+		 *  解析为 `BeanDefinitionHolder` {@link BeanDefinitionParserDelegate#parseBeanDefinitionElement(Element)}
 		 */
 		BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
 		if (bdHolder != null) {
@@ -407,7 +427,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 				/**
 				 * 向 Spring IOC 容器注册解析得到 Bean 定义，这是 bean 定义向 IOC 容器注册的入口。
 				 *
-				 *  分配注册策略 {@link BeanDefinitionReaderUtils#registerBeanDefinition(BeanDefinitionHolder, BeanDefinitionRegistry)}
+				 *  对解析后的 bdHolder进行注册 {@link BeanDefinitionReaderUtils#registerBeanDefinition(BeanDefinitionHolder, BeanDefinitionRegistry)}
 				 *
 				 */
 				BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getReaderContext().getRegistry());

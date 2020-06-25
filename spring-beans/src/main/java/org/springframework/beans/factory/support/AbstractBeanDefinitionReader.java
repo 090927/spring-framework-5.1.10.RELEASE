@@ -239,8 +239,7 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 				Resource[] resources = ((ResourcePatternResolver) resourceLoader).getResources(location);
 
 				/**
-				 * 委托子类 {@link org.springframework.beans.factory.xml.XmlBeanDefinitionReader#loadBeanDefinitions(Resource...)}
-				 *  实现加载功能。
+				 * 委托子类 解析 BeanDefinition {@link org.springframework.beans.factory.xml.XmlBeanDefinitionReader#loadBeanDefinitions(Resource...)}
 				 */
 				int count = loadBeanDefinitions(resources);
 				if (actualResources != null) {

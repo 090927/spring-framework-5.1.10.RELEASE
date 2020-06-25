@@ -154,17 +154,18 @@ public class DefaultResourceLoader implements ResourceLoader {
 				return resource;
 			}
 		}
-		// 如果是 类路径的方式。使用 ClassPathResource 来得到 Bean 文件的资源对象。
+		// 如果是 类路径的方式。使用 `ClassPathContextResource` 来得到 Bean 文件的资源对象。
 		if (location.startsWith("/")) {
 			return getResourceByPath(location);
 		}
+		// 再次，以 classpath: 开头，返回 ClassPathResource 类型的资源
 		else if (location.startsWith(CLASSPATH_URL_PREFIX)) {
 			return new ClassPathResource(location.substring(CLASSPATH_URL_PREFIX.length()), getClassLoader());
 		}
 		else {
 			try {
 				// Try to parse the location as a URL...
-				// 如果是 URL 方式，使用 UrlResource 作为Bean 文件的资源对象。
+				// 如果是 URL 方式，使用 UrlResource 作为 Bean 文件的资源对象。
 				URL url = new URL(location);
 				return (ResourceUtils.isFileURL(url) ? new FileUrlResource(url) : new UrlResource(url));
 			}

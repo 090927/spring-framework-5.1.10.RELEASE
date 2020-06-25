@@ -675,7 +675,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		 *
 		 * 具体实现调用子类容器的 {@link AbstractRefreshableApplicationContext#refreshBeanFactory()}  方法。
 		 *
-		 * 2、
+		 * 2、将配置文件的信息装入容器Bean定义注册表(BeanDefinitionRegistry)中，Bean未初始化 子类实现
 		 */
 		refreshBeanFactory();
 		return getBeanFactory();

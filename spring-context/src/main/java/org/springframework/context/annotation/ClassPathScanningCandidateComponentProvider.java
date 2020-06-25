@@ -409,8 +409,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(type);
 
 				/**
-				 * 如果扫描的类符合容器配置的过滤规则
-				 *  {@link #isCandidateComponent(MetadataReader)}
+				 * 如果扫描的类符合容器配置的过滤规则 {@link #isCandidateComponent(MetadataReader)}
 				 */
 				if (isCandidateComponent(metadataReader)) {
 
