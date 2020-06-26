@@ -214,17 +214,18 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		/**
 		 * 1、spring 中创建 bean 的原则是不等bean 创建完成就会将创建bean 的objectFactory 提早曝光加入到缓存中。一旦下一个bean 创建需要依赖上一个bean
 		 * 2、对于获取单例不需要创建 ObjectFactory 对象。原型对象直接返回 ObjectFactory 对象提早加入缓存中。
-		 *    1、这里 beanName 对应的 bean 是否正在创建。
+		 *    1、这里 beanName 对应的 bean 是否正在创建。{@link #isSingletonCurrentlyInCreation(String)}
 		 */
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
 
 			/**
-			 * 1、singletonObjects： 【 存储完全初始化好的bean 】用于保存BeanName 和 创建bean 实例之间的关系，beanName -> beanInstance
+			 * 1、singletonObjects： 【一级缓存】【 存储完全初始化好的bean 】用于保存 BeanName 和 创建bean 实例之间的关系，beanName -> beanInstance
 			 *
-			 * 2、singletonFactories 用于保存 BeanName 和创建 bean的工厂之间的关系。beanName -> ObjectFactory
-			 * 	  在创建 doCreateBean() 中单例对象、bean在创建中，put.
+			 * 2、singletonFactories 【三级缓存】  用于保存 BeanName 和创建 bean的工厂之间的关系。beanName -> ObjectFactory
+			 * 	  2.1、在创建 doCreateBean() 中单例对象、bean在创建中，put
 			 *
-			 * 3、earlySingletonObject 【 存储初始化中的bean 】也是保存 BeanName 和创建 bean 实例之前的关系。于 singletonObjects 的不同之处在于，当一个单例 bean 被放到这里后
+			 * 3、earlySingletonObject 【二级缓存】【 存储初始化中的bean 】也是保存 BeanName 和创建 bean 实例之前的关系。于 singletonObjects 的不同之处在于，当一个单例 bean 被放到这里后
+			 *
 			 * 4、registeredSingletons 用来保存当前所有已注册的Bean。
 			 *
 			 */
@@ -236,7 +237,13 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				// 如果如果 singletonObject = null，且允许提前曝光 bean 实例，则从相应的 ObjectFactory 获取一个原始的（raw）bean（尚未填充属性）
 				if (singletonObject == null && allowEarlyReference) {
 
-					// 则从 singletonFactory 缓存中获取 ObjectFactory 对象，然后再调用 getObject 方法获取原始 bean 实例的应用，也就是早期引用
+					/*
+					 * 则从 singletonFactory 缓存中获取 ObjectFactory 对象，然后再调用 getObject 方法获取原始 bean 实例的应用，也就是早期引用
+					 *
+					 * 1、singletonFactories 在 doCreateBean # createBeanInstance 创建bean实例后，未填充属性。
+					 *   为解决单例bean 循环依赖问题， “提前：暴露出一个工厂” 【 addSingletonFactory 】
+					 *
+					 */
 					ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
 					if (singletonFactory != null) {
 
@@ -274,6 +281,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 */
 	public Object getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
 		Assert.notNull(beanName, "Bean name must not be null");
+
+		// 全局变量需要同步
 		synchronized (this.singletonObjects) {
 
 			// 从缓存中获取单例 bean，若不为空，则直接返回，不用再初始化
@@ -289,7 +298,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				}
 
 				/*
-				 * 将 beanName 添加到 singletonsCurrentlyInCreation 集合中，
+				 * 将 beanName 添加到 singletonsCurrentlyInCreation 集合中，用于判断当前bean 是否正在创建中。
 				 * 【 用于表明 beanName 对应的 bean 正在创建中 】
 				 */
 				beforeSingletonCreation(beanName);

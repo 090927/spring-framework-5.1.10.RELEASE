@@ -39,6 +39,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.support.ResourceEditorRegistrar;
 import org.springframework.context.ApplicationContext;
@@ -549,11 +550,19 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
-				// 调用所有注册的 BeanFactoryPostProcessor Bean
+
+				/**
+				 * 调用所有注册的 BeanFactoryPostProcessor Bean {@link #invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory)}
+				 *
+				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
-				// 为 beanFactory 注册POST 事件处理器
+				/**
+				 * 注册Bean后处理器 根据反射机制从BeanDefinitionRegistry中找出所有实现了BeanPostProcessor接口的bean，
+				 * 真正的调用在getBean时候
+				 *  并将它们注册到容器Bean后处理器的注册表中，这里只是注册， {@link PostProcessorRegistrationDelegate#registerBeanPostProcessors(ConfigurableListableBeanFactory, AbstractApplicationContext)}
+				 */
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
@@ -746,6 +755,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * <p>Must be called before singleton instantiation.
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
+
+		/**
+		 * {@link PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory, List)}
+		 */
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime

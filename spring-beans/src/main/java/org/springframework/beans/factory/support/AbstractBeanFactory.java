@@ -254,6 +254,25 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * TODO【DI 入口】  真正实现向 IOC 容器获取Bean 功能，也是触发依赖注入的地方
 	 * 1、transformedBeanName 转换 beanName
 	 *
+	 * 2、从缓存中获取bean
+	 *   1、缓存中存在bean。实例化指定bean 对象。直接返回。
+	 *   2、缓存中 未存在指定bean。继续流程
+	 *
+	 * 3、校验 bean 循环依赖
+	 * 	1、只有单例情况下才会尝试解决循依赖
+	 * 	2、原型模式，直接抛出异常。
+	 *
+	 * 4、判断工厂中是否含有此 Bean的定义，如果没有找到则父类容器里找。
+	 *
+	 * 5、处理，标签中包含 `parent` getMergedLocalBeanDefinition
+	 * 	1、合并成一个 BeanDefinition
+	 *
+	 * 6、处理 标签中包含 `dependsOn` 处理当前bean 依赖的bean。
+	 *
+	 * 7、根据bean Source 单独处理
+	 * 	1、单例模式。
+	 * 	2、原型模式。
+	 *
 	 */
 	@SuppressWarnings("unchecked")
 	protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredType,
@@ -293,6 +312,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 
 			/**
+			 *  1、为什么会用这个方法
+			 *  	我们从缓存中获取的是原始 bean、并不是我们想要的bean。
+			 *
 			 * 获取给定bean 实例对象，主要完成 `FactoryBean` 相关处理 {@link #getObjectForBeanInstance(Object, String, String, RootBeanDefinition)}
 			 */
 			bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
@@ -325,7 +347,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			 */
 			BeanFactory parentBeanFactory = getParentBeanFactory();
 
-			// 如果 sharedInstance = null，则到父容器中查找 bean 实例
+			/*
+			 * 如果 `beanDefinitionMap` 中也就是在所有已经加载的类中不包括 `beanName`，则尝试从 `parentBeanFactory` 中检测
+			 */
 			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 				// Not found -> check parent.
 
@@ -367,12 +391,14 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				 * 1、将存储XML 配置文件的 GernericBeanDefinition 转换为 RootBeanDefinition
 				 */
 				final RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
+
+				// 检查给定的合并的 BeanDefinition
 				checkMergedBeanDefinition(mbd, beanName, args);
 
 				// Guarantee initialization of beans that the current bean depends on.
 
 				/*
-				 * 获取当前bean 所有依赖 bean的名称。
+				 * 获取当前 bean 所有依赖 bean的名称。
 				 * 1、循环检查，是否存在，“循环依赖”
 				 * 2、递归调用 “getBean” 获取当前Bean 依赖的bean。
 				 */
@@ -398,7 +424,6 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 						}
 
 						/**
-						 * 注册依赖
 						 * 把依赖 bean 注册给当前依赖的 bean {@link DefaultSingletonBeanRegistry#registerDependentBean(String, String)}}
 						 */
 						registerDependentBean(dep, beanName);
@@ -489,10 +514,15 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 				else {
 
-					/**
+					/*
 					 * 要创建 bean即不是单例、也不是原型，则根据 bean 定义的资源中，配置的生命周期。选择实例化 bean。
 					 */
 					String scopeName = mbd.getScope();
+
+					/**
+					 * Scope 分为：
+					 * 	request、session、global-Session。。。
+					 */
 					final Scope scope = this.scopes.get(scopeName);
 					if (scope == null) {
 						throw new IllegalStateException("No Scope registered for scope name '" + scopeName + "'");
@@ -1387,6 +1417,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		if (mbd != null) {
 			return mbd;
 		}
+
+		/**
+		 *  获取beanDefinition {@link DefaultListableBeanFactory#getBeanDefinition(String)}
+		 */
 		return getMergedBeanDefinition(beanName, getBeanDefinition(beanName));
 	}
 

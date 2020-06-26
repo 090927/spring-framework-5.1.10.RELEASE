@@ -87,6 +87,10 @@ public class InjectionMetadata {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Processing injected element of bean '" + beanName + "': " + element);
 				}
+
+				/**
+				 * 依次循环注入 {@link org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.AutowiredFieldElement#inject(Object, String, PropertyValues)}
+				 */
 				element.inject(target, beanName, pvs);
 			}
 		}

@@ -20,6 +20,9 @@ import java.lang.annotation.Annotation;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.ResourceLoader;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -76,7 +79,15 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 
 	private static final String FILTER_EXPRESSION_ATTRIBUTE = "expression";
 
-
+	/**
+	 *
+	 * @param element the element that is to be parsed into one or more {@link BeanDefinition BeanDefinitions}
+	 * @param parserContext the object encapsulating the current state of the parsing process;
+	 * provides access to a {@link org.springframework.beans.factory.support.BeanDefinitionRegistry}
+	 * @return
+	 *
+	 * 在 Spring-IOC 解析自定义标签，
+	 */
 	@Override
 	@Nullable
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
@@ -95,11 +106,14 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 		ClassPathBeanDefinitionScanner scanner = configureScanner(parserContext, element);
 
 		/**
-		 * 在指定的基础包中执行扫描 base-package = "org.springiframe.*" 找出该包下所有的bean注册为beanDefinition {@link ClassPathBeanDefinitionScanner#doScan(String...)}
+		 * 在指定的基础包中执行扫描 <base-package = "org.springiframe.*" ></base-package>
+		 * 找出该包下所有的bean注册为beanDefinition {@link ClassPathBeanDefinitionScanner#doScan(String...)}
 		 */
 		Set<BeanDefinitionHolder> beanDefinitions = scanner.doScan(basePackages);
 
-		// 注册组件
+		/**
+		 * 注册组件 {@link #registerComponents(XmlReaderContext, Set, Element)}
+		 */
 		registerComponents(parserContext.getReaderContext(), beanDefinitions, element);
 
 		return null;
@@ -116,7 +130,9 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 
 		// Delegate bean definition registration to scanner class.
 
-		// 此处如果`use-default-filters`为true，则添加`@Component`、`@Service`、`@Controller`、`@Repository`、`@ManagedBean`、`@Named`添加到includeFilters的集合过滤
+		/**
+		 * 此处如果`use-default-filters`为true，{@link #createScanner(XmlReaderContext, boolean)}  则添加`@Component`、`@Service`、`@Controller`、`@Repository`、`@ManagedBean`、`@Named`添加到includeFilters的集合过滤
+		 */
 		ClassPathBeanDefinitionScanner scanner = createScanner(parserContext.getReaderContext(), useDefaultFilters);
 		scanner.setBeanDefinitionDefaults(parserContext.getDelegate().getBeanDefinitionDefaults());
 		scanner.setAutowireCandidatePatterns(parserContext.getDelegate().getAutowireCandidatePatterns());
@@ -152,6 +168,10 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 	}
 
 	protected ClassPathBeanDefinitionScanner createScanner(XmlReaderContext readerContext, boolean useDefaultFilters) {
+
+		/**
+		 * {@link ClassPathBeanDefinitionScanner#ClassPathBeanDefinitionScanner(BeanDefinitionRegistry, boolean, Environment, ResourceLoader)}
+		 */
 		return new ClassPathBeanDefinitionScanner(readerContext.getRegistry(), useDefaultFilters,
 				readerContext.getEnvironment(), readerContext.getResourceLoader());
 	}
@@ -160,20 +180,36 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 			XmlReaderContext readerContext, Set<BeanDefinitionHolder> beanDefinitions, Element element) {
 
 		Object source = readerContext.extractSource(element);
+
+		// 包装为CompositeComponentDefinition对象，内置多ComponentDefinition对象
 		CompositeComponentDefinition compositeDef = new CompositeComponentDefinition(element.getTagName(), source);
 
+		// 将已注册的所有beanDefinitionHolder对象放到上述对象中
 		for (BeanDefinitionHolder beanDefHolder : beanDefinitions) {
 			compositeDef.addNestedComponent(new BeanComponentDefinition(beanDefHolder));
 		}
 
 		// Register annotation config processors, if necessary.
 		boolean annotationConfig = true;
+
+		// 获取annotation-config的属性值，默认为true
 		if (element.hasAttribute(ANNOTATION_CONFIG_ATTRIBUTE)) {
 			annotationConfig = Boolean.valueOf(element.getAttribute(ANNOTATION_CONFIG_ATTRIBUTE));
 		}
 		if (annotationConfig) {
+
+			/**
+			 * 【 常用注解解析 】
+			 *
+			 * 注册多个BeanPostProcessor接口，具体什么可自行查看，返回的是包含BeanPostProcessor接口的beanDefinitionHolder对象集合
+			 * 我们的@Autowired注解解析类AutowiredAnnotationBeanPostProcessor就是在这里默认导入的
+			 *
+			 *  解析注解 {@link AnnotationConfigUtils#registerAnnotationConfigProcessors(BeanDefinitionRegistry, Object)}
+			 */
 			Set<BeanDefinitionHolder> processorDefinitions =
 					AnnotationConfigUtils.registerAnnotationConfigProcessors(readerContext.getRegistry(), source);
+
+			// 继续装入 CompositeComponentDefinition对象
 			for (BeanDefinitionHolder processorDefinition : processorDefinitions) {
 				compositeDef.addNestedComponent(new BeanComponentDefinition(processorDefinition));
 			}

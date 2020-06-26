@@ -39,10 +39,14 @@ public abstract class AbstractRequestAttributesScope implements Scope {
 
 	@Override
 	public Object get(String name, ObjectFactory<?> objectFactory) {
+
+		// 获取当前线程属性集合
 		RequestAttributes attributes = RequestContextHolder.currentRequestAttributes();
 		Object scopedObject = attributes.getAttribute(name, getScope());
 		if (scopedObject == null) {
 			scopedObject = objectFactory.getObject();
+
+			// 存放到RequestAttributes中
 			attributes.setAttribute(name, scopedObject, getScope());
 			// Retrieve object again, registering it for implicit session attribute updates.
 			// As a bonus, we also allow for potential decoration at the getAttribute level.
@@ -53,15 +57,21 @@ public abstract class AbstractRequestAttributesScope implements Scope {
 				scopedObject = retrievedObject;
 			}
 		}
+
+		// 获取到直接返回
 		return scopedObject;
 	}
 
 	@Override
 	@Nullable
 	public Object remove(String name) {
+
+		// 获取当前线程属性集合
 		RequestAttributes attributes = RequestContextHolder.currentRequestAttributes();
 		Object scopedObject = attributes.getAttribute(name, getScope());
 		if (scopedObject != null) {
+
+			// 从RequestAttributes中移除
 			attributes.removeAttribute(name, getScope());
 			return scopedObject;
 		}

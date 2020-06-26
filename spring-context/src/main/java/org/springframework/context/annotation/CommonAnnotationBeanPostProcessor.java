@@ -327,6 +327,16 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 		return pvs;
 	}
 
+	/**
+	 * @param pvs the property values that the factory is about to apply (never {@code null})
+	 * @param pds the relevant property descriptors for the target bean (with ignored
+	 * dependency types - which the factory handles specifically - already filtered out)
+	 * @param bean the bean instance created, but whose properties have not yet been set
+	 * @param beanName the name of the bean
+	 * @return
+	 *
+	 * 解析 注册 @PostConstruct、@PreDestroy、@Resource
+	 */
 	@Deprecated
 	@Override
 	public PropertyValues postProcessPropertyValues(
@@ -348,6 +358,10 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 					if (metadata != null) {
 						metadata.clear(pvs);
 					}
+
+					/**
+					 *  buildResourceMetadata
+					 */
 					metadata = buildResourceMetadata(clazz);
 					this.injectionMetadataCache.put(cacheKey, metadata);
 				}
@@ -363,29 +377,38 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 		do {
 			final List<InjectionMetadata.InjectedElement> currElements = new ArrayList<>();
 
+
+			// 扫描成员变量注解
 			ReflectionUtils.doWithLocalFields(targetClass, field -> {
 				if (webServiceRefClass != null && field.isAnnotationPresent(webServiceRefClass)) {
 					if (Modifier.isStatic(field.getModifiers())) {
 						throw new IllegalStateException("@WebServiceRef annotation is not supported on static fields");
 					}
+
+					// WebService相关注解
 					currElements.add(new WebServiceRefElement(field, field, null));
 				}
 				else if (ejbRefClass != null && field.isAnnotationPresent(ejbRefClass)) {
 					if (Modifier.isStatic(field.getModifiers())) {
 						throw new IllegalStateException("@EJB annotation is not supported on static fields");
 					}
+
+					// Ejb相关注解
 					currElements.add(new EjbRefElement(field, field, null));
 				}
 				else if (field.isAnnotationPresent(Resource.class)) {
 					if (Modifier.isStatic(field.getModifiers())) {
 						throw new IllegalStateException("@Resource annotation is not supported on static fields");
 					}
+
+					// Resource注解
 					if (!this.ignoredResourceTypes.contains(field.getType().getName())) {
 						currElements.add(new ResourceElement(field, field, null));
 					}
 				}
 			});
 
+			// 扫描成员方法注解
 			ReflectionUtils.doWithLocalMethods(targetClass, method -> {
 				Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(method);
 				if (!BridgeMethodResolver.isVisibilityBridgeMethodPair(method, bridgedMethod)) {

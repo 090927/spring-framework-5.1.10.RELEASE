@@ -85,6 +85,10 @@ public interface SmartLifecycle extends Lifecycle, Phased {
 	 * @see #getPhase()
 	 * @see LifecycleProcessor#onRefresh()
 	 * @see ConfigurableApplicationContext#refresh()
+	 *
+	 * 如果该`Lifecycle`类所在的上下文在调用`refresh`时,希望能够自己自动进行回调，
+	 * 		则返回`true`* ,
+	 *      false的值表明组件打算通过显式的start()调用来启动，类似于普通的Lifecycle实现。
 	 */
 	default boolean isAutoStartup() {
 		return true;

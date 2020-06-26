@@ -116,15 +116,22 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 			if (bean instanceof EmbeddedValueResolverAware) {
 				((EmbeddedValueResolverAware) bean).setEmbeddedValueResolver(this.embeddedValueResolver);
 			}
+			// 底层访问资源的加载器
 			if (bean instanceof ResourceLoaderAware) {
 				((ResourceLoaderAware) bean).setResourceLoader(this.applicationContext);
 			}
+
+			// 应用事件
 			if (bean instanceof ApplicationEventPublisherAware) {
 				((ApplicationEventPublisherAware) bean).setApplicationEventPublisher(this.applicationContext);
 			}
+
+			// 国际化
 			if (bean instanceof MessageSourceAware) {
 				((MessageSourceAware) bean).setMessageSource(this.applicationContext);
 			}
+
+			// 加载ApplicationContext
 			if (bean instanceof ApplicationContextAware) {
 				((ApplicationContextAware) bean).setApplicationContext(this.applicationContext);
 			}

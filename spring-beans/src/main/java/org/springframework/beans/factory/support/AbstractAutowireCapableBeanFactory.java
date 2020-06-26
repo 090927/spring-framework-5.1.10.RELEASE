@@ -590,7 +590,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 *
 	 * 真正创建 bean 的方法。
 	 *  1、【 实例化阶段 】createBeanInstance 生成 Bean 包含的 Java 对象实例。
-	 *  2、【 依赖注入阶段 】populateBean 对Bean 属性的依赖注入进行处理。
+	 *  2、【 填充属性阶段 】populateBean 对Bean 属性的依赖注入进行处理。
 	 *  3、【 bean 初始化】initializeBean 对 Bean 实例化对象初始化。
 	 */
 	protected Object doCreateBean(final String beanName, final RootBeanDefinition mbd, final @Nullable Object[] args)
@@ -638,6 +638,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// 【 调用 PostProcessor 后置处理器 】
 		synchronized (mbd.postProcessingLock) {
+
+			// 判断是否有后置处理，如果有后置处理，则允许后置处理修改 BeanDefinition
 			if (!mbd.postProcessed) {
 				try {
 
@@ -684,17 +686,18 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Initialize the bean instance.
 
+
 		/* *****************************
 		 *
-		 *  上面是 bean 实例化阶段
+		 *   TODO 上面是 bean 实例化阶段
 		 *
-		 *  populateBean 开始 bean 依赖注入
+		 *  populateBean 开始 bean 属性填充
 		 *
 		 *******************************/
 		Object exposedObject = bean;
 		try {
 			/**
-			 * 2、【 对bean属性进行依赖注入 】
+			 * 2、【 对bean属性进行属性填充 】
 			 * 将 bean 实例对象封装，并且将 bean 定义中配置的属性赋值给实例对象。
 			 * 对 bean 属性的依赖注入进行处理 {@link #populateBean(String, RootBeanDefinition, BeanWrapper)}
 			 */
@@ -1238,7 +1241,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				Class<?> targetType = determineTargetType(beanName, mbd);
 				if (targetType != null) {
 
-					// 应用前置处理
+					/**
+					 * 应用前置处理 {@link #applyBeanPostProcessorsBeforeInstantiation(Class, String)}
+					 */
 					bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
 					if (bean != null) {
 
@@ -1663,7 +1668,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			pvs = newPvs;
 		}
 
+		// 后处理器已经初始化
 		boolean hasInstAwareBpps = hasInstantiationAwareBeanPostProcessors();
+
+		// 需要依赖检查
 		boolean needsDepCheck = (mbd.getDependencyCheck() != AbstractBeanDefinition.DEPENDENCY_CHECK_NONE);
 
 		/*
@@ -1677,16 +1685,34 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (pvs == null) {
 				pvs = mbd.getPropertyValues();
 			}
+
+			/***************************************
+			 * 【 @Autowired注解就是在这里完成的注入 】
+			 *
+			 * PropertyValue值设置后，Spring会调用getBeanPostProcessor方法遍历Bean工厂中注册的所有InstantiationAwareBeanPostProcessor
+			 * 其中就包括 {@link org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
+			 *
+			 ***************************************/
+
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
+
 				if (bp instanceof InstantiationAwareBeanPostProcessor) {
 					InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+
+					/**
+					 * @Autowired注解:  {@link org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor#postProcessProperties(PropertyValues, Object, String)}
+					 */
 					PropertyValues pvsToUse = ibp.postProcessProperties(pvs, bw.getWrappedInstance(), beanName);
 					if (pvsToUse == null) {
 						if (filteredPds == null) {
 							filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
 						}
 
-						// 对属性进行后置处理
+						/**
+						 * 对所有需要依赖检查的属性进行后处理
+						 * @Autowired注解:  {@link org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor#postProcessProperties(PropertyValues, Object, String)}
+						 * {@link org.springframework.context.annotation.CommonAnnotationBeanPostProcessor}
+						 */
 						pvsToUse = ibp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
 						if (pvsToUse == null) {
 							return;
@@ -1702,6 +1728,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (filteredPds == null) {
 				filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
 			}
+
+			// 依赖检查。对应depends-on属性，3.0已废弃
 			checkDependencies(beanName, mbd, filteredPds, pvs);
 		}
 
@@ -2203,8 +2231,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		else {
 
 			/**
-			 * 若 bean 实现了 BeanNameAware、BeanFactoryAware、BeanClassLoaderAware 等接口，则向 bean 中注入相关对象
-			 * {@link #invokeAwareMethods(String, Object)}
+			 * 若 bean {@link #invokeAwareMethods(String, Object)} 实现了 BeanNameAware、BeanFactoryAware、BeanClassLoaderAware 等接口，则向 bean 中注入相关对象
 			 */
 			invokeAwareMethods(beanName, bean);
 		}
@@ -2286,6 +2313,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (System.getSecurityManager() != null) {
 				try {
 					AccessController.doPrivileged((PrivilegedExceptionAction<Object>) () -> {
+
 						((InitializingBean) bean).afterPropertiesSet();
 						return null;
 					}, getAccessControlContext());

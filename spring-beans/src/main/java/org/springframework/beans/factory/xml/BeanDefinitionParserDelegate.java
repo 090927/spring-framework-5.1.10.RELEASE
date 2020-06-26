@@ -1504,8 +1504,6 @@ public class BeanDefinitionParserDelegate {
 
 		/**
 		 * 根据命名空间找到命名空间处理类 , 所以得到的命名空间处理类是 {@link org.springframework.context.config.ContextNamespaceHandler}
-		 *
-		 *
 		 */
 		NamespaceHandler handler = this.readerContext.getNamespaceHandlerResolver().resolve(namespaceUri);
 		if (handler == null) {

@@ -108,7 +108,10 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 
 			// 多线程同步、以防止数据不一致
 			synchronized (getSingletonMutex()) {
-				// 直接从 bean 工厂缓存中获取指定名称 bean 实例对象。
+
+				/**
+				 * 直接从 bean 工厂缓存中获取指定名称 bean 实例对象。
+				 */
 				Object object = this.factoryBeanObjectCache.get(beanName);
 				if (object == null) {
 
@@ -145,6 +148,7 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 						/**
 						 * 这里的 beanName 对应于 FactoryBean 的实现类， FactoryBean 的实现类也会被实例化，并被缓存在 singletonObjects 中
 						 *  1、getSingleton(beanName) 获取
+						 *  2、相同 beanName 调用 `getObjectFromFactoryBean` 会直接从缓存中获取，直接返回。
 						 */
 						if (containsSingleton(beanName)) {
 							this.factoryBeanObjectCache.put(beanName, object);
