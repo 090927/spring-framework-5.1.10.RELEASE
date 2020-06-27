@@ -312,10 +312,12 @@ public abstract class AopUtils {
 			return candidateAdvisors;
 		}
 		List<Advisor> eligibleAdvisors = new ArrayList<>();
+
+		// 首先处理引介增强
 		for (Advisor candidate : candidateAdvisors) {
 
 			/**
-			 * 筛选 IntroductionAdvisor 类型的通知器 {@link canApply }
+			 *  【 真正的匹配 】 筛选 IntroductionAdvisor 类型的通知器 {@link #canApply(Advisor, Class, boolean)}   }
 			 */
 			if (candidate instanceof IntroductionAdvisor && canApply(candidate, clazz)) {
 				eligibleAdvisors.add(candidate);
@@ -325,6 +327,8 @@ public abstract class AopUtils {
 		for (Advisor candidate : candidateAdvisors) {
 			if (candidate instanceof IntroductionAdvisor) {
 				// already processed
+
+				// 引介增强已经处理
 				continue;
 			}
 

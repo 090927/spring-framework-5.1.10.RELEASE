@@ -444,7 +444,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			/**
 			 * 1、调用Bean 实例所有后置处理中 `初始化后` 的处理方法
 			 * 2、为 Bean 实例化对象在初始化之后做一些 自定义的处理。
-			 * @see org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator#postProcessAfterInitialization bean 实例化后置处理。
+			 *
+			 *  【AOP 代理 】 bean实例化后置处理, 判断Bean 是否被代理，如果代理则生成对应的代理类 {@link org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator#postProcessAfterInitialization
 			 */
 			Object current = processor.postProcessAfterInitialization(result, beanName);
 			if (current == null) {

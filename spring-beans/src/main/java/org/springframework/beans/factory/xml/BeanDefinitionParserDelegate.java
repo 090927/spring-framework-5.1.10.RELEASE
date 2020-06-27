@@ -1493,17 +1493,27 @@ public class BeanDefinitionParserDelegate {
 	 * @return the resulting bean definition
 	 *
 	 * 【 自定义标签解析 】
+	 *  解析 xml、AOP 等标签。
+	 *  1、通过命名空间，获取 nameSpaceUri
+	 *  2、找到对应 `NamespaceHandler` 标签处理器。
+	 *  3、执行 对应标签处理器。parse 方法，进行解析。
 	 */
 	@Nullable
 	public BeanDefinition parseCustomElement(Element ele, @Nullable BeanDefinition containingBd) {
-		// 获取xml配置文件中的命名空间http://www.springframework.org/schema/context
+		/**
+		 * 获取xml配置文件中的命名空间http://www.springframework.org/schema/context
+		 *
+		 */
 		String namespaceUri = getNamespaceURI(ele);
 		if (namespaceUri == null) {
 			return null;
 		}
 
 		/**
-		 * 根据命名空间找到命名空间处理类 , 所以得到的命名空间处理类是 {@link org.springframework.context.config.ContextNamespaceHandler}
+		 * 根据命名空间找到命名空间处理类 , 所以得到的命名空间处理类是 {@link DefaultNamespaceHandlerResolver#resolve(String)}
+		 *
+		 * {@link org.springframework.context.config.ContextNamespaceHandler}
+		 *
 		 */
 		NamespaceHandler handler = this.readerContext.getNamespaceHandlerResolver().resolve(namespaceUri);
 		if (handler == null) {
@@ -1512,8 +1522,14 @@ public class BeanDefinitionParserDelegate {
 		}
 
 		/**
-		 * 解析命名空间支持的标签 真正实现 {@link org.springframework.context.annotation.ComponentScanBeanDefinitionParser#parse(Element, ParserContext)}
+		 * 解析命名空间支持的标签 真正实现
+		 *
+		 * 组件扫描，常用注解 {@link org.springframework.context.annotation.ComponentScanBeanDefinitionParser#parse(Element, ParserContext)}
+		 *
+		 * AOP 标签解析 {@link org.springframework.aop.config.AspectJAutoProxyBeanDefinitionParser#parse(Element, ParserContext)}
+		 *
 		 */
+
 		return handler.parse(ele, new ParserContext(this.readerContext, this, containingBd));
 	}
 

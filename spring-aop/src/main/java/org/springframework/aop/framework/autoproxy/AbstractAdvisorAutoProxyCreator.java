@@ -99,7 +99,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
 
 		/**
-		 * 查找所有的通知器 {@link AnnotationAwareAspectJAutoProxyCreator#findCandidateAdvisors()}
+		 * 查找所有的通知器 {@link #findCandidateAdvisors()}
 		 * 1、从父类方法从容器中获取。
 		 * 2、解析 @Aspect
 		 */
@@ -107,13 +107,14 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 
 		/**
 		 * 筛选可应用在 beanClass 上的 Advisor，通过 ClassFilter 和 MethodMatcher
-		 * 对目标类和方法进行匹配 {@link #findAdvisorsThatCanApply(List, Class, String)}
+		 * 从所有增强器中找出适合的增强器 {@link #findAdvisorsThatCanApply(List, Class, String)}
 		 */
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
 
 		// 拓展操作
 		extendAdvisors(eligibleAdvisors);
 		if (!eligibleAdvisors.isEmpty()) {
+
 			/**
 			 *  {@link #sortAdvisors(List)}
 			 */
@@ -134,6 +135,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 		Assert.state(this.advisorRetrievalHelper != null, "No BeanFactoryAdvisorRetrievalHelper available");
 
 		/**
+		 * 使用 `BeanFactoryUtils` 获取。
 		 * 即从 bean 容器中将 Advisor 类型的 bean 查找出来 {@link BeanFactoryAdvisorRetrievalHelper#findAdvisorBeans()}
 		 */
 		return this.advisorRetrievalHelper.findAdvisorBeans();
@@ -154,7 +156,9 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 		ProxyCreationContext.setCurrentProxiedBeanName(beanName);
 		try {
 
-			// 调用重载方法
+			/**
+			 * 过滤已经得到的advisors {@link AopUtils#findAdvisorsThatCanApply(List, Class)}
+			 */
 			return AopUtils.findAdvisorsThatCanApply(candidateAdvisors, beanClass);
 		}
 		finally {

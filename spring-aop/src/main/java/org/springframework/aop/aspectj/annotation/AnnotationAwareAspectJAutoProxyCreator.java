@@ -107,6 +107,8 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
 
 			/**
 			 *  解析 @Aspect 注解，并构建通知器 {@link BeanFactoryAspectJAdvisorsBuilder#buildAspectJAdvisors()}
+			 *  1、获取容器中所有 beanNames
+			 *  2、遍历，判断是否是 “Aspect 注解类”
 			 */
 			advisors.addAll(this.aspectJAdvisorsBuilder.buildAspectJAdvisors());
 		}

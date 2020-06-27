@@ -176,13 +176,13 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 		Object target = null;
 
 		try {
-			// 目标对象未实现 equals 方法
+			// 如果被代理的目标对象要执行的方法是 equal 则执行JdkDynamicAopProxy（即代理对象的equal）方法
 			if (!this.equalsDefined && AopUtils.isEqualsMethod(method)) {
 				// The target does not implement the equals(Object) method itself.
 				return equals(args[0]);
 			}
 
-			// 目标对象未实现 hashcode 方法
+			// 如果被代理的目标对象要执行的方法是 hashCode 则执行JdkDynamicAopProxy（即代理对象的hashCode）方法
 			else if (!this.hashCodeDefined && AopUtils.isHashCodeMethod(method)) {
 				// The target does not implement the hashCode() method itself.
 				return hashCode();
@@ -234,7 +234,7 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 				// nothing but a reflective operation on the target, and no hot swapping or fancy proxying.
 				Object[] argsToUse = AopProxyUtils.adaptArgumentsIfNecessary(method, args);
 
-				// 通过反射执行目标方法
+				// 如果没有发现任何拦截器那么直接调用切点方法
 				retVal = AopUtils.invokeJoinpointUsingReflection(target, method, argsToUse);
 			}
 			else {

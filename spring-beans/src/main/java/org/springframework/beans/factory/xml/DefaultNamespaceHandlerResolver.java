@@ -111,10 +111,14 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 	 * from the configured mappings.
 	 * @param namespaceUri the relevant namespace URI
 	 * @return the located {@link NamespaceHandler}, or {@code null} if none found
+	 *
+	 * 【 注册 handlerMappings 】
 	 */
 	@Override
 	@Nullable
 	public NamespaceHandler resolve(String namespaceUri) {
+
+		//
 		Map<String, Object> handlerMappings = getHandlerMappings();
 		Object handlerOrClassName = handlerMappings.get(namespaceUri);
 		if (handlerOrClassName == null) {
@@ -131,7 +135,15 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 					throw new FatalBeanException("Class [" + className + "] for namespace [" + namespaceUri +
 							"] does not implement the [" + NamespaceHandler.class.getName() + "] interface");
 				}
+
+				// init方法
 				NamespaceHandler namespaceHandler = (NamespaceHandler) BeanUtils.instantiateClass(handlerClass);
+
+				/**
+				 * 执行 对应 标签处理器 init()
+				 * 例如 AOP {@link org.springframework.aop.config.AopNamespaceHandler#init()}
+				 * Context {@link org.springframework.context.config.ContextNamespaceHandler#init()}
+				 */
 				namespaceHandler.init();
 				handlerMappings.put(namespaceUri, namespaceHandler);
 				return namespaceHandler;
@@ -160,6 +172,8 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 						logger.trace("Loading NamespaceHandler mappings from [" + this.handlerMappingsLocation + "]");
 					}
 					try {
+
+						// 在 META-INF/spring.handlers配置文件中有配置对应关系
 						Properties mappings =
 								PropertiesLoaderUtils.loadAllProperties(this.handlerMappingsLocation, this.classLoader);
 						if (logger.isTraceEnabled()) {
@@ -167,6 +181,8 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 						}
 						handlerMappings = new ConcurrentHashMap<>(mappings.size());
 						CollectionUtils.mergePropertiesIntoMap(mappings, handlerMappings);
+
+						// 赋值到 Map<String, Object> handlerMappings中
 						this.handlerMappings = handlerMappings;
 					}
 					catch (IOException ex) {
