@@ -1,5 +1,6 @@
 ### AOP
 #### 标签解析。
+- `标签解析` `DefaultBeanDefinitionDocumentReader # parseBeanDefinitions()`
 - `IOC 标签解析` `BeanDefinitionParserDelegate # parseCustomElement()`
     - 通过 `AOP` 命名空间uri，找到 AOP 标签处理器。`AopNamespaceHandler` 
 

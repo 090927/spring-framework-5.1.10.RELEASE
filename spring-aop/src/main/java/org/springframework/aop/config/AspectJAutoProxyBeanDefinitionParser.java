@@ -35,6 +35,9 @@ import org.springframework.lang.Nullable;
  * @author Rob Harrop
  * @author Juergen Hoeller
  * @since 2.0
+ *
+ *
+ * <aop:aspectj-autoproxy/> 标签对应的解析类。
  */
 class AspectJAutoProxyBeanDefinitionParser implements BeanDefinitionParser {
 

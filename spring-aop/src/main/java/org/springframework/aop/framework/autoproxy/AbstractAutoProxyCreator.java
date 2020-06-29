@@ -492,6 +492,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * @see #buildAdvisors
 	 *
 	 *  TODO 【AOP】~ 创建代理
+	 *
+	 *  1、获取增强方法或者增强器
+	 * 	2、根据获取的增强进行代理
 	 */
 	protected Object createProxy(Class<?> beanClass, @Nullable String beanName,
 			@Nullable Object[] specificInterceptors, TargetSource targetSource) {

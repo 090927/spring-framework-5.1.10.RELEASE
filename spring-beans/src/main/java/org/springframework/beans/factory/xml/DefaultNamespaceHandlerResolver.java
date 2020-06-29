@@ -118,7 +118,9 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 	@Nullable
 	public NamespaceHandler resolve(String namespaceUri) {
 
-		//
+		/**
+		 * 获取所有 handler {@link #getHandlerMappings()}
+		 */
 		Map<String, Object> handlerMappings = getHandlerMappings();
 		Object handlerOrClassName = handlerMappings.get(namespaceUri);
 		if (handlerOrClassName == null) {
@@ -140,7 +142,8 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 				NamespaceHandler namespaceHandler = (NamespaceHandler) BeanUtils.instantiateClass(handlerClass);
 
 				/**
-				 * 执行 对应 标签处理器 init()
+				 * 【 核心注册逻辑 】 {@link NamespaceHandlerSupport#parsers} Map<Element, 标签解析类>
+				 *
 				 * 例如 AOP {@link org.springframework.aop.config.AopNamespaceHandler#init()}
 				 * Context {@link org.springframework.context.config.ContextNamespaceHandler#init()}
 				 */

@@ -247,11 +247,16 @@ public abstract class AopUtils {
 		}
 		classes.addAll(ClassUtils.getAllInterfacesForClassAsSet(targetClass));
 
+		// 获取对应类的所有接口并连同类本身一起遍历，在遍历过程中又对类中的方法再次遍历，一但匹配成功便认为这个类使用于当前增强器
 		for (Class<?> clazz : classes) {
 			Method[] methods = ReflectionUtils.getAllDeclaredMethods(clazz);
 			for (Method method : methods) {
 				if (introductionAwareMethodMatcher != null ?
 						introductionAwareMethodMatcher.matches(method, targetClass, hasIntroductions) :
+
+						/**
+						 *  tx 事务 {@link org.springframework.transaction.interceptor.TransactionAttributeSourcePointcut#matches(Method, Class)}
+						 */
 						methodMatcher.matches(method, targetClass)) {
 					return true;
 				}
@@ -291,6 +296,10 @@ public abstract class AopUtils {
 		}
 		else if (advisor instanceof PointcutAdvisor) {
 			PointcutAdvisor pca = (PointcutAdvisor) advisor;
+
+			/**
+			 *  [canApply] {@link #canApply(Pointcut, Class, boolean)}
+			 */
 			return canApply(pca.getPointcut(), targetClass, hasIntroductions);
 		}
 		else {

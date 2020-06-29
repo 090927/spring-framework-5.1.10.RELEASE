@@ -1529,7 +1529,6 @@ public class BeanDefinitionParserDelegate {
 		 * AOP 标签解析 {@link org.springframework.aop.config.AspectJAutoProxyBeanDefinitionParser#parse(Element, ParserContext)}
 		 *
 		 */
-
 		return handler.parse(ele, new ParserContext(this.readerContext, this, containingBd));
 	}
 

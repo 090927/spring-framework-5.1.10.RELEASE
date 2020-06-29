@@ -62,6 +62,10 @@ public class AopNamespaceHandler extends NamespaceHandlerSupport {
 	@Override
 	public void init() {
 		// In 2.0 XSD as well as in 2.1 XSD.
+
+		/**
+		 * <aop:config/> 标签解析类 {@link ConfigBeanDefinitionParser}
+		 */
 		registerBeanDefinitionParser("config", new ConfigBeanDefinitionParser());
 
 		/**

@@ -98,7 +98,9 @@ public abstract class AopConfigUtils {
 			BeanDefinitionRegistry registry, @Nullable Object source) {
 
 		/**
-		 *  {@link #registerOrEscalateApcAsRequired(Class, BeanDefinitionRegistry, Object)}
+		 *  注册 {@link #registerOrEscalateApcAsRequired(Class, BeanDefinitionRegistry, Object)}
+		 *
+		 *  注册 `AnnotationAwareAspectJAutoProxyCreator` bean。
 		 */
 		return registerOrEscalateApcAsRequired(AnnotationAwareAspectJAutoProxyCreator.class, registry, source);
 	}
@@ -116,6 +118,7 @@ public abstract class AopConfigUtils {
 			definition.getPropertyValues().add("exposeProxy", Boolean.TRUE);
 		}
 	}
+
 
 	@Nullable
 	private static BeanDefinition registerOrEscalateApcAsRequired(
@@ -140,10 +143,18 @@ public abstract class AopConfigUtils {
 			return null;
 		}
 
+		/**
+		 * cls (AnnotationAwareAspectJAutoProxyCreator)
+		 * 和 BeanDefinition 绑定在一起。
+		 */
 		RootBeanDefinition beanDefinition = new RootBeanDefinition(cls);
 		beanDefinition.setSource(source);
 		beanDefinition.getPropertyValues().add("order", Ordered.HIGHEST_PRECEDENCE);
 		beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+
+		/**
+		 * 将 `BeanDefinition` 注册到 BeanFactory 中。{@link org.springframework.beans.factory.support.DefaultListableBeanFactory#registerBeanDefinition(String, BeanDefinition)}
+		 */
 		registry.registerBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME, beanDefinition);
 		return beanDefinition;
 	}

@@ -189,6 +189,8 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 
 				/**
 				 * 调用拦截器逻辑 {@link org.springframework.aop.aspectj.AspectJAfterAdvice#invoke(MethodInvocation)}
+				 *
+				 * 事务 {@link org.springframework.transaction.interceptor.TransactionInterceptor#invoke(MethodInvocation)}
 				 */
 				return dm.interceptor.invoke(this);
 			}
