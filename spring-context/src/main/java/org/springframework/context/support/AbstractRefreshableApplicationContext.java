@@ -127,6 +127,11 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	protected final void refreshBeanFactory() throws BeansException {
 		/**
 		 * 如果已经有容器，销毁容器的bean，关闭容器。
+		 *
+		 *  1、如果 ApplicationContext 中已经加载过 BeanFactory 了，销毁所有 Bean，关闭 BeanFactory
+		 *
+		 *  2、注意，应用中 BeanFactory 本来就是可以多个的，这里可不是说应用全局是否有 BeanFactory，而是当前
+		 * 		ApplicationContext 是否有 BeanFactory
 		 */
 		if (hasBeanFactory()) {
 			destroyBeans();
@@ -137,11 +142,11 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 			DefaultListableBeanFactory beanFactory = createBeanFactory();
 			beanFactory.setSerializationId(getId());
 			/**
-			 * 对IOC 容器进行定制化，例如：启动参数、开启注解的自动装配
+			 * 对IOC 容器进行定制化，例如：启动参数、开启注解的自动装配 {@link #customizeBeanFactory(DefaultListableBeanFactory)}
 			 */
 			customizeBeanFactory(beanFactory);
 			/**
-			 * 调用载入 bean 定义的方法，
+			 * 调用载入 bean 到 BeanFactory
 			 * 当前类中定义抽象方法，具体实现，调用子类容器实现。
 			 *
 			 *  【 加载、注册 】装置bean 定义 {@link AbstractXmlApplicationContext#loadBeanDefinitions(DefaultListableBeanFactory)}
@@ -239,8 +244,12 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 */
 	protected void customizeBeanFactory(DefaultListableBeanFactory beanFactory) {
 		if (this.allowBeanDefinitionOverriding != null) {
+
+			// 是否允许 Bean 定义覆盖
 			beanFactory.setAllowBeanDefinitionOverriding(this.allowBeanDefinitionOverriding);
 		}
+
+		// 是否允许 Bean 间的循环依赖
 		if (this.allowCircularReferences != null) {
 			beanFactory.setAllowCircularReferences(this.allowCircularReferences);
 		}

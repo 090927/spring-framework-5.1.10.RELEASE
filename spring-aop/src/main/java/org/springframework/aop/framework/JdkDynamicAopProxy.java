@@ -176,7 +176,7 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 		Object target = null;
 
 		try {
-			// 如果被代理的目标对象要执行的方法是 equal 则执行JdkDynamicAopProxy（即代理对象的equal）方法
+			// 如果被代理的目标对象要执行的方法是 equal 则执行 JdkDynamicAopProxy（即代理对象的equal）方法
 			if (!this.equalsDefined && AopUtils.isEqualsMethod(method)) {
 				// The target does not implement the equals(Object) method itself.
 				return equals(args[0]);
@@ -234,13 +234,24 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 				// nothing but a reflective operation on the target, and no hot swapping or fancy proxying.
 				Object[] argsToUse = AopProxyUtils.adaptArgumentsIfNecessary(method, args);
 
-				// 如果没有发现任何拦截器那么直接调用切点方法
+				/**
+				 * 通过反射调用目标对象的方法
+				 */
 				retVal = AopUtils.invokeJoinpointUsingReflection(target, method, argsToUse);
 			}
 			else {
 				// We need to create a method invocation...
 
-				// 创建一个方法调用器，并将拦截器链传入其中
+				/**
+				 * 创建一个方法调用器，并将拦截器链传入其中
+				 *
+				 * 	 proxy:生成的动态代理对象
+				 * 	  target:目标方法
+				 * 	  args: 目标方法参数
+				 * 	  targetClass:目标类对象
+				 * 	  chain: AOP拦截器执行链，是一个MethodInterceptor的集合
+				 *
+				 */
 				MethodInvocation invocation =
 						new ReflectiveMethodInvocation(proxy, target, method, args, targetClass, chain);
 				// Proceed to the joinpoint through the interceptor chain.

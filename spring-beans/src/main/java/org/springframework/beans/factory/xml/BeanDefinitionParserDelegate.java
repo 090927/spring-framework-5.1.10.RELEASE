@@ -1522,11 +1522,15 @@ public class BeanDefinitionParserDelegate {
 		}
 
 		/**
-		 * 解析命名空间支持的标签 真正实现
+		 * 解析命名空间支持的标签 真正实现 {@link NamespaceHandlerSupport#parse(Element, ParserContext)}
+		 * 	1、通过 `命名空间` 找到对应的解析类。
+		 * 	2、执行 `具体解析类` parse() 方法机进行标签的解析。
 		 *
 		 * 组件扫描，常用注解 {@link org.springframework.context.annotation.ComponentScanBeanDefinitionParser#parse(Element, ParserContext)}
 		 *
-		 * AOP 标签解析 {@link org.springframework.aop.config.AspectJAutoProxyBeanDefinitionParser#parse(Element, ParserContext)}
+		 *
+		 * AOP <aop:config/> 标签解析 {@link org.springframework.aop.config.ConfigBeanDefinitionParser#parse(Element, ParserContext)}
+		 * AOP <aop:aspectj-autoproxy/> 标签解析 {@link org.springframework.aop.config.AspectJAutoProxyBeanDefinitionParser#parse(Element, ParserContext)}
 		 *
 		 */
 		return handler.parse(ele, new ParserContext(this.readerContext, this, containingBd));
