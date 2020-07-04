@@ -79,7 +79,9 @@ final class InstantiationModelAwarePointcutAdvisorImpl
 	@Nullable
 	private Boolean isAfterAdvice;
 
-
+	/**
+	 * 根据切点生成增强。
+	 */
 	public InstantiationModelAwarePointcutAdvisorImpl(AspectJExpressionPointcut declaredPointcut,
 			Method aspectJAdviceMethod, AspectJAdvisorFactory aspectJAdvisorFactory,
 			MetadataAwareAspectInstanceFactory aspectInstanceFactory, int declarationOrder, String aspectName) {
@@ -111,7 +113,9 @@ final class InstantiationModelAwarePointcutAdvisorImpl
 			this.pointcut = this.declaredPointcut;
 			this.lazy = false;
 
-			// instantiateAdvice
+			/**
+			 * instantiateAdvice {@link #instantiateAdvice(AspectJExpressionPointcut)}
+			 */
 			this.instantiatedAdvice = instantiateAdvice(this.declaredPointcut);
 		}
 	}

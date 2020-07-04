@@ -47,7 +47,7 @@ abstract class TransactionAttributeSourcePointcut extends StaticMethodMatcherPoi
 		TransactionAttributeSource tas = getTransactionAttributeSource();
 
 		/**
-		 * tas {@link AbstractFallbackTransactionAttributeSource#getTransactionAttribute(Method, Class)}
+		 * 事务 {@link AbstractFallbackTransactionAttributeSource#getTransactionAttribute(Method, Class)}
 		 */
 		return (tas == null || tas.getTransactionAttribute(method, targetClass) != null);
 	}

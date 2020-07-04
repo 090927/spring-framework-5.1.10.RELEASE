@@ -192,7 +192,9 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 				return AopProxyUtils.ultimateTargetClass(this.advised);
 			}
 
-			// 直接反射调用 Advised 接口或者其父接口中定义的方法，不应通知。
+			/*
+			 * 直接反射调用 Advised 接口或者其父接口中定义的方法，不应通知。
+			 */
 			else if (!this.advised.opaque && method.getDeclaringClass().isInterface() &&
 					method.getDeclaringClass().isAssignableFrom(Advised.class)) {
 				// Service invocations on ProxyConfig with the proxy config...

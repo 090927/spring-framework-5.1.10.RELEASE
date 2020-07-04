@@ -769,7 +769,9 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 					}
 					unexpectedRollback = status.isGlobalRollbackOnly();
 
-					// 如果时独立事务直接提交
+					/**
+					 * 如果时独立事务直接提交 {@link org.springframework.jdbc.datasource.DataSourceTransactionManager#doCommit(DefaultTransactionStatus)}
+					 */
 					doCommit(status);
 				}
 				else if (isFailEarlyOnGlobalRollbackOnly()) {
@@ -864,6 +866,10 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 					if (status.isDebug()) {
 						logger.debug("Initiating transaction rollback");
 					}
+
+					/**
+					 * 【核心，回滚逻辑】 {@link org.springframework.jdbc.datasource.DataSourceTransactionManager#doRollback(DefaultTransactionStatus)}
+					 */
 					doRollback(status);
 				}
 				else {

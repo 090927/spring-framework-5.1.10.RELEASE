@@ -16,6 +16,7 @@
 
 package org.springframework.transaction.interceptor;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
@@ -168,7 +169,9 @@ public abstract class AbstractFallbackTransactionAttributeSource implements Tran
 
 		// First try is the method in the target class.
 
-		// 查看方法中是否存在事务声明
+		/**
+		 * 查看方法中是否存在事务声明 {@link org.springframework.transaction.annotation.AnnotationTransactionAttributeSource#determineTransactionAttribute(AnnotatedElement)}
+		 */
 		TransactionAttribute txAttr = findTransactionAttribute(specificMethod);
 		if (txAttr != null) {
 			return txAttr;

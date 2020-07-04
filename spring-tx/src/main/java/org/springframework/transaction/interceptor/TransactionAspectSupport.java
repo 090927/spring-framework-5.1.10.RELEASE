@@ -273,6 +273,13 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 	 * @param invocation the callback to use for proceeding with the target invocation
 	 * @return the return value of the method, if any
 	 * @throws Throwable propagated from the target invocation
+	 *
+	 * 【核心 Spring 事务】
+	 *
+	 *  1、创建事务
+	 *  2、方法调用
+	 *  3、异常 ~ 事务回滚
+	 *  4、正常提交事务。
 	 */
 	@Nullable
 	protected Object invokeWithinTransaction(Method method, @Nullable Class<?> targetClass,
@@ -283,7 +290,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		TransactionAttributeSource tas = getTransactionAttributeSource();
 		final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);
 
-		// 获取beanFactory中的transactionManager
+		// 获取 `beanFactory` 中的 `transactionManager`
 		final PlatformTransactionManager tm = determineTransactionManager(txAttr);
 
 		// 构造方法唯一标识(service.UserServiceImpl.save)
@@ -294,7 +301,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			// Standard transaction demarcation with getTransaction and commit/rollback calls.
 
 			/**
-			 * 【 创建事务 】 创建TransactionInfo 完成了目标方法运行前的事务准备工作 {@link #createTransactionIfNecessary(PlatformTransactionManager, TransactionAttribute, String)}
+			 * 【 创建事务 】 创建 `TransactionInfo` 完成了目标方法运行前的事务准备工作 {@link #createTransactionIfNecessary(PlatformTransactionManager, TransactionAttribute, String)}
 			 */
 			TransactionInfo txInfo = createTransactionIfNecessary(tm, txAttr, joinpointIdentification);
 
@@ -303,21 +310,23 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				// This is an around advice: Invoke the next interceptor in the chain.
 				// This will normally result in a target object being invoked.
 
-				// 方法调用
+				/*
+				 * 【 方法调用 】
+				 */
 				retVal = invocation.proceedWithInvocation();
 			}
 			catch (Throwable ex) {
 				// target invocation exception
 
 				/**
-				 * 回滚事务 注意：只对RuntimeException回滚 {@link #completeTransactionAfterThrowing(TransactionInfo, Throwable)}
+				 * 【 回滚事务 】 注意：只对 `RuntimeException` 回滚 {@link #completeTransactionAfterThrowing(TransactionInfo, Throwable)}
 				 */
 				completeTransactionAfterThrowing(txInfo, ex);
 				throw ex;
 			}
 			finally {
 
-				// 清除信息
+				// 【 清除信息 】
 				cleanupTransactionInfo(txInfo);
 			}
 
@@ -484,7 +493,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 
 		// If no name specified, apply method identification as transaction name.
 
-		// 如果没有名称指定则使用方法唯一标识，并使用DelegatingTransactionAttribute封装txAttr
+		// 如果没有名称指定则使用方法唯一标识，并使用 `DelegatingTransactionAttribute` 封装 txAttr
 		if (txAttr != null && txAttr.getName() == null) {
 			txAttr = new DelegatingTransactionAttribute(txAttr) {
 				@Override
@@ -499,7 +508,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			if (tm != null) {
 
 				/**
-				 * [核心] 获取TransactionStatus 这里有建立事务连接  {@link org.springframework.transaction.support.AbstractPlatformTransactionManager#getTransaction
+				 * [核心] 获取 TransactionStatus 这里有建立事务连接  {@link org.springframework.transaction.support.AbstractPlatformTransactionManager#getTransaction}
 				 */
 				status = tm.getTransaction(txAttr);
 			}
@@ -566,7 +575,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			}
 
 			/**
-			 * commit {@link org.springframework.transaction.support.AbstractPlatformTransactionManager#commit(TransactionStatus)}
+			 * commit 提交事务 {@link org.springframework.transaction.support.AbstractPlatformTransactionManager#commit(TransactionStatus)}
 			 */
 			txInfo.getTransactionManager().commit(txInfo.getTransactionStatus());
 		}
@@ -592,6 +601,10 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			// 这里判断是否回滚默认的依据是抛出的异常是否是 (ex instanceof RuntimeException || ex instanceof Error)，我们熟悉的Exception默认是不处理的
 			if (txInfo.transactionAttribute != null && txInfo.transactionAttribute.rollbackOn(ex)) {
 				try {
+
+					/**
+					 * 回滚 {@link org.springframework.transaction.support.AbstractPlatformTransactionManager#rollback(TransactionStatus)}
+					 */
 					txInfo.getTransactionManager().rollback(txInfo.getTransactionStatus());
 				}
 				catch (TransactionSystemException ex2) {

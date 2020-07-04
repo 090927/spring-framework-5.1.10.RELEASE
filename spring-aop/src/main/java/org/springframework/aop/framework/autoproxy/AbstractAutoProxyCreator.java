@@ -297,7 +297,11 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) {
 		if (bean != null) {
 
-			// 根据给定的bean的class和name构建出个key，格式: beanClassName_beanName
+			/*
+			 * 根据给定的bean的class和name构建出个key，
+			 *
+			 * cacheKey = 【 格式: beanClassName_beanName 】
+			 */
 			Object cacheKey = getCacheKey(bean.getClass(), beanName);
 			if (this.earlyProxyReferences.remove(cacheKey) != bean) {
 
@@ -339,7 +343,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * @param cacheKey the cache key for metadata access
 	 * @return a proxy wrapping the bean, or the raw bean instance as-is
 	 *
-	 * 如果需要，为Bean 生成代理对象。
+	 *  【 哪些目标对象需要生成代理？ 】
 	 *
 	 * 1、若 bean 是 AOP 基础设施类型，则直接返回
 	 * 2、为 bean 查找合适的通知器
@@ -353,7 +357,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			return bean;
 		}
 
-		// 判断是否应该代理这个bean。
+		// 无需增强
 		if (Boolean.FALSE.equals(this.advisedBeans.get(cacheKey))) {
 			return bean;
 		}
@@ -374,6 +378,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
 		/**
 		 * 【 核心方法 如果存在增强方法则创建代理 】
+		 * 1、获取增强方法、或者增强器
+		 * 2、根据获取的增强进行代理。
 		 * 为目标 bean 查找合适的通知器。{@link AbstractAdvisorAutoProxyCreator#getAdvicesAndAdvisorsForBean(Class, String, TargetSource)}
 		 */
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);

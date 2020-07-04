@@ -20,6 +20,7 @@
 - `CommonAnnotationBeanPostProcessor` 解析 `@PostConstruct @PreDestroy @Resource` 注解
 - `PersistenceAnnotationBeanPostProcessor` 解析JPA注解，持久层
 
+#### @Configuration 注解解析。
 
 ### BeanFactory
 - `DefaultListableBeanFactory`

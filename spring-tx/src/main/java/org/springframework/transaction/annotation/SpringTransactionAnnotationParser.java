@@ -45,6 +45,10 @@ public class SpringTransactionAnnotationParser implements TransactionAnnotationP
 		AnnotationAttributes attributes = AnnotatedElementUtils.findMergedAnnotationAttributes(
 				element, Transactional.class, false, false);
 		if (attributes != null) {
+
+			/**
+			 * 【核心 解析 @Transaction 注解】{@link #parseTransactionAnnotation(AnnotationAttributes)}
+			 */
 			return parseTransactionAnnotation(attributes);
 		}
 		else {
@@ -56,6 +60,11 @@ public class SpringTransactionAnnotationParser implements TransactionAnnotationP
 		return parseTransactionAnnotation(AnnotationUtils.getAnnotationAttributes(ann, false, false));
 	}
 
+	/**
+	 * 解析 【 @Transaction 注解 】
+	 * @param attributes
+	 * @return
+	 */
 	protected TransactionAttribute parseTransactionAnnotation(AnnotationAttributes attributes) {
 		RuleBasedTransactionAttribute rbta = new RuleBasedTransactionAttribute();
 

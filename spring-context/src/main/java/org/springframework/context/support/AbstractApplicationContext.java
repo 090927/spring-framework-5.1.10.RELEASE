@@ -535,7 +535,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			/**
 			 * 1、刷新预处理
 			 *
-			 * 调用容器准备刷新的方法，获取容器的当前时间，同时给容器设置同步标识
+			 * 调用容器准备刷新的方法，获取容器的当前时间，同时给容器设置同步标识 {@link #prepareRefresh()}
 			 */
 			prepareRefresh();
 
@@ -695,10 +695,18 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 		// Initialize any placeholder property sources in the context environment.
+
+		/**
+		 * 留个子类覆盖。
+		 */
 		initPropertySources();
 
 		// Validate that all properties marked as required are resolvable:
 		// see ConfigurablePropertyResolver#setRequiredProperties
+
+		/**
+		 * 验证需要的属性文件是否都已经放入环境中去了
+		 */
 		getEnvironment().validateRequiredProperties();
 
 		// Store pre-refresh ApplicationListeners...

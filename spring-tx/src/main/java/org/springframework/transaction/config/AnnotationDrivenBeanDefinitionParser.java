@@ -137,7 +137,7 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 
 				// Create the TransactionAttributeSource definition.
 
-				// 创建 AnnotationTransactionAttributeSource definition.
+				// 创建 `AnnotationTransactionAttributeSource` definition.
 				RootBeanDefinition sourceDef = new RootBeanDefinition(
 						"org.springframework.transaction.annotation.AnnotationTransactionAttributeSource");
 				sourceDef.setSource(eleSource);
@@ -153,11 +153,11 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 				interceptorDef.setSource(eleSource);
 				interceptorDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 
-				// <tx:annotation-driven/>标签在不指定transaction-manager属性的时候，会默认寻找id固定名为transactionManager的bean作为事务管理器
+				// <tx:annotation-driven/> 标签在不指定transaction-manager 属性的时候，会默认寻找id固定名为transactionManager的bean作为事务管理器
 				registerTransactionManager(element, interceptorDef);
 				interceptorDef.getPropertyValues().add("transactionAttributeSource", new RuntimeBeanReference(sourceName));
 
-				// 注册TransactionInterceptor bean，
+				// 注册 `TransactionInterceptor` bean，
 				String interceptorName = parserContext.getReaderContext().registerWithGeneratedName(interceptorDef);
 
 				// Create the TransactionAttributeSourceAdvisor definition.
