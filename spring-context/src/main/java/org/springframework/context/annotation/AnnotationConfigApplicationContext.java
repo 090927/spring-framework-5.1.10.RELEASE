@@ -19,6 +19,7 @@ package org.springframework.context.annotation;
 import java.util.function.Supplier;
 
 import org.springframework.beans.factory.config.BeanDefinitionCustomizer;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.support.GenericApplicationContext;
@@ -68,6 +69,10 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * 	需要通过 register 方法注册配置类，并调用 {@link #refresh()} 刷新容器，触发容器对注解bean 的载入、解析和注册。
 	 */
 	public AnnotationConfigApplicationContext() {
+
+		/**
+		 *  创建 IOC 容器 {@link AnnotatedBeanDefinitionReader#AnnotatedBeanDefinitionReader(BeanDefinitionRegistry)}
+		 */
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}

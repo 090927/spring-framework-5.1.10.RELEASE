@@ -73,6 +73,9 @@ public abstract class AopConfigUtils {
 	public static BeanDefinition registerAutoProxyCreatorIfNecessary(
 			BeanDefinitionRegistry registry, @Nullable Object source) {
 
+		/**
+		 * `注册 IOC` {@link #registerOrEscalateApcAsRequired(Class, BeanDefinitionRegistry, Object)}
+		 */
 		return registerOrEscalateApcAsRequired(InfrastructureAdvisorAutoProxyCreator.class, registry, source);
 	}
 
@@ -144,7 +147,15 @@ public abstract class AopConfigUtils {
 		}
 
 		/**
+		 *
+		 * @EnableTransactionManagement 开启事务管理器，注册到 IOC 容器
+		 * 	cls (InfrastructureAdvisorAutoProxyCreator)
+		 *
+		 *
+		 * <aop:aspectj-autoproxy/> 标签解析，注册到 IOC 容器
 		 * cls (AnnotationAwareAspectJAutoProxyCreator)
+		 *
+		 *
 		 * 和 BeanDefinition 绑定在一起。
 		 */
 		RootBeanDefinition beanDefinition = new RootBeanDefinition(cls);
