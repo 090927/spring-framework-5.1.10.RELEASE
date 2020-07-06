@@ -31,6 +31,7 @@ import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -89,6 +90,14 @@ public class AnnotatedBeanDefinitionReader {
 
 		/**
 		 *  重点在最后一行的注册注解配置处理器 {@link AnnotationConfigUtils#registerAnnotationConfigProcessors(BeanDefinitionRegistry)}
+		 *
+		 *  1、创建IOC 容器。
+		 *  2、将后置处理器注册到 IOC 容器中。
+		 *  	1、ConfigurationClassPostProcessor
+		 *  	2、AutowiredAnnotationBeanPostProcessor
+		 *  	3、CommonAnnotationBeanPostProcessor
+		 *  	4、EventListenerMethodProcessor
+		 *  	5、DefaultEventListenerFactory
 		 */
 		AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
 	}
@@ -228,6 +237,10 @@ public class AnnotatedBeanDefinitionReader {
 
 		// 根据指定的主机定义类，创建Spring 容器中对注解 Bean 的封装的数据结构。
 		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(beanClass);
+
+		/**
+		 * 处理 @Condition 注解 {@link ConditionEvaluator#shouldSkip(AnnotatedTypeMetadata, ConfigurationCondition.ConfigurationPhase)}
+		 */
 		if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) {
 			return;
 		}

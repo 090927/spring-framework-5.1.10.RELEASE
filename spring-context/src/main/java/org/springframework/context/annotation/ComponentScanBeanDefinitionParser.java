@@ -101,7 +101,7 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 		// Actually scan for bean definitions and register them.
 
 		/**
-		 * 构建类路径的BeanDefinition扫描器 {@link #configureScanner(ParserContext, Element)}
+		 * 构建类路径的 `BeanDefinition` 扫描器 {@link #configureScanner(ParserContext, Element)}
 		 */
 		ClassPathBeanDefinitionScanner scanner = configureScanner(parserContext, element);
 

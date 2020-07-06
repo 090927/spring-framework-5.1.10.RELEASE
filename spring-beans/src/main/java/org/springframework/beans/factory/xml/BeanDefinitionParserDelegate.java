@@ -1528,8 +1528,8 @@ public class BeanDefinitionParserDelegate {
 		 *
 		 * 组件扫描，常用注解 {@link org.springframework.context.annotation.ComponentScanBeanDefinitionParser#parse(Element, ParserContext)}
 		 *
-		 *
 		 * AOP <aop:config/> 标签解析 {@link org.springframework.aop.config.ConfigBeanDefinitionParser#parse(Element, ParserContext)}
+		 *
 		 * AOP <aop:aspectj-autoproxy/> 标签解析 {@link org.springframework.aop.config.AspectJAutoProxyBeanDefinitionParser#parse(Element, ParserContext)}
 		 *
 		 */

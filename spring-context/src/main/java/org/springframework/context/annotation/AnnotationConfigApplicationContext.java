@@ -22,8 +22,11 @@ import org.springframework.beans.factory.config.BeanDefinitionCustomizer;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -74,6 +77,10 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		 *  创建 IOC 容器 {@link AnnotatedBeanDefinitionReader#AnnotatedBeanDefinitionReader(BeanDefinitionRegistry)}
 		 */
 		this.reader = new AnnotatedBeanDefinitionReader(this);
+
+		/**
+		 *  创建一个Bean扫描器 {@link ClassPathBeanDefinitionScanner#ClassPathBeanDefinitionScanner(BeanDefinitionRegistry, boolean, Environment, ResourceLoader)}
+		 */
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}
 
@@ -96,8 +103,20 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 *   常用的构造函数，通过将涉及的配置类传递给构造函数，实现响应配置类中的 bean 自动注册到容器。
 	 */
 	public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
+
+		/**
+		 * 创建容器、和bean 扫描器
+		 */
 		this();
+
+		/**
+		 * 向容器注册，已处理的Bean {@link #register(Class[])}
+		 */
 		register(componentClasses);
+
+		/**
+		 * 刷新容器 {@link AbstractApplicationContext#refresh()}
+		 */
 		refresh();
 	}
 

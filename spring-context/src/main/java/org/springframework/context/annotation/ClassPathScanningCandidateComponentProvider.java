@@ -326,11 +326,15 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 		if (this.componentsIndex != null && indexSupportsIncludeFilters()) {
 
 			/**
-			 * addCandidateComponentsFromIndex
+			 *  {@link #addCandidateComponentsFromIndex(CandidateComponentsIndex, String)}
 			 */
 			return addCandidateComponentsFromIndex(this.componentsIndex, basePackage);
 		}
 		else {
+
+			/**
+			 * {@link #scanCandidateComponents(String)}
+			 */
 			return scanCandidateComponents(basePackage);
 		}
 	}
@@ -405,11 +409,13 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 			boolean debugEnabled = logger.isDebugEnabled();
 			for (String type : types) {
 
-				// 为指定资源获取元数据读取器，元数据通过汇编（ASM）读取资源的元信息。
+				/**
+				 * 为指定资源获取元数据读取器，元数据通过汇编（ASM）读取资源的元信息。{@link org.springframework.core.type.classreading.SimpleMetadataReaderFactory#getMetadataReader(String)}
+				 */
 				MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(type);
 
 				/**
-				 * 如果扫描的类符合容器配置的过滤规则 {@link #isCandidateComponent(MetadataReader)}
+				 * 【*】如果扫描的类符合容器配置的过滤规则 {@link #isCandidateComponent(MetadataReader)}
 				 */
 				if (isCandidateComponent(metadataReader)) {
 
@@ -444,8 +450,24 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	private Set<BeanDefinition> scanCandidateComponents(String basePackage) {
 		Set<BeanDefinition> candidates = new LinkedHashSet<>();
 		try {
+
+			/**
+			 *
+			 *  处理包路径:  {@link #resolveBasePackage(String)}
+			 *  先处理 backagePage 中占位符，将${...} 替换为实际的配置值，然后将其中 Java Package 路径分隔符 “.” 替换成资源路径分隔符“/”
+			 *
+			 *
+			 *  例如：
+			 *  	basePackage = “thinking.in.spring.boot”
+			 *  替换后
+			 *  	classpath*: thinking/in/spring/boot/**
+			 *
+			 */
+
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
 					resolveBasePackage(basePackage) + '/' + this.resourcePattern;
+
+			// 获取类资源集合
 			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
 			boolean traceEnabled = logger.isTraceEnabled();
 			boolean debugEnabled = logger.isDebugEnabled();
@@ -453,9 +475,17 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				if (traceEnabled) {
 					logger.trace("Scanning " + resource);
 				}
+
+				// 资源可读取
 				if (resource.isReadable()) {
 					try {
+
+						// 获取资源中 `MetadataReader` 对象。
 						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
+
+						/**
+						 * isCandidateComponent  {@link #isCandidateComponent(MetadataReader)}
+						 */
 						if (isCandidateComponent(metadataReader)) {
 							ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
 							sbd.setResource(resource);
