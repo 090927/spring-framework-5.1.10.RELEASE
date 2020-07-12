@@ -67,6 +67,10 @@ final class PostProcessorRegistrationDelegate {
 				if (postProcessor instanceof BeanDefinitionRegistryPostProcessor) {
 					BeanDefinitionRegistryPostProcessor registryProcessor =
 							(BeanDefinitionRegistryPostProcessor) postProcessor;
+
+					/**
+					 * {@link org.springframework.context.annotation.ConfigurationClassPostProcessor#postProcessBeanDefinitionRegistry(BeanDefinitionRegistry)}
+					 */
 					registryProcessor.postProcessBeanDefinitionRegistry(registry);
 					registryProcessors.add(registryProcessor);
 				}

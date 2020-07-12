@@ -31,6 +31,7 @@ import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -86,6 +87,10 @@ public class AnnotatedBeanDefinitionReader {
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 		Assert.notNull(environment, "Environment must not be null");
 		this.registry = registry;
+
+		/**
+		 * Condition {@link ConditionEvaluator#ConditionEvaluator(BeanDefinitionRegistry, Environment, ResourceLoader)}
+		 */
 		this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
 
 		/**

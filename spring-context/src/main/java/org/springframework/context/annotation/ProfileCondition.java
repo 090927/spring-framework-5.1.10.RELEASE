@@ -36,6 +36,10 @@ class ProfileCondition implements Condition {
 		MultiValueMap<String, Object> attrs = metadata.getAllAnnotationAttributes(Profile.class.getName());
 		if (attrs != null) {
 			for (Object value : attrs.get("value")) {
+
+				/**
+				 *  Profile 匹配 {@link org.springframework.core.env.AbstractEnvironment#acceptsProfiles(Profiles)}
+				 */
 				if (context.getEnvironment().acceptsProfiles(Profiles.of((String[]) value))) {
 					return true;
 				}

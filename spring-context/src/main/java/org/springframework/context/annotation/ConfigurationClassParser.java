@@ -239,6 +239,10 @@ class ConfigurationClassParser {
 		// Recursively process the configuration class and its superclass hierarchy.
 		SourceClass sourceClass = asSourceClass(configClass);
 		do {
+
+			/**
+			 * 【 doProcessConfigurationClass】核心处理 {@link #doProcessConfigurationClass(ConfigurationClass, SourceClass)}
+			 */
 			sourceClass = doProcessConfigurationClass(configClass, sourceClass);
 		}
 		while (sourceClass != null);

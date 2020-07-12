@@ -137,12 +137,16 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 	 * @param servletContext the servlet context to be initialized
 	 * @see WebApplicationInitializer#onStartup(ServletContext)
 	 * @see AnnotationAwareOrderComparator
+	 *
+	 *
+	 * 容器启动。
 	 */
 	@Override
 	public void onStartup(@Nullable Set<Class<?>> webAppInitializerClasses, ServletContext servletContext)
 			throws ServletException {
 
 		List<WebApplicationInitializer> initializers = new LinkedList<>();
+
 
 		if (webAppInitializerClasses != null) {
 			for (Class<?> waiClass : webAppInitializerClasses) {

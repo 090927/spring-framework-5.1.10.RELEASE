@@ -36,6 +36,8 @@ public interface MetadataReader {
 
 	/**
 	 * Read basic class metadata for the underlying class.
+	 *
+	 * 用于读取类的元信息。
 	 */
 	ClassMetadata getClassMetadata();
 

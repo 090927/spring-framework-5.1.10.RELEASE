@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -343,6 +344,10 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 	@Override
 	public boolean acceptsProfiles(Profiles profiles) {
 		Assert.notNull(profiles, "Profiles must not be null");
+
+		/**
+		 * 【 matches 】{@link org.springframework.core.env.ProfilesParser.ParsedProfiles#matches(Predicate)}
+		 */
 		return profiles.matches(this::isProfileActive);
 	}
 

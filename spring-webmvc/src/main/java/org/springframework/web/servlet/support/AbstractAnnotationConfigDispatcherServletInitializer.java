@@ -68,6 +68,8 @@ public abstract class AbstractAnnotationConfigDispatcherServletInitializer
 	 * {@inheritDoc}
 	 * <p>This implementation creates an {@link AnnotationConfigWebApplicationContext},
 	 * providing it the annotated classes returned by {@link #getServletConfigClasses()}.
+	 *
+	 *  创建容器上下文。
 	 */
 	@Override
 	protected WebApplicationContext createServletApplicationContext() {

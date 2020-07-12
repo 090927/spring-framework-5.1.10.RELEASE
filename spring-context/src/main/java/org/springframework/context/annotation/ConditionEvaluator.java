@@ -56,6 +56,9 @@ class ConditionEvaluator {
 	public ConditionEvaluator(@Nullable BeanDefinitionRegistry registry,
 			@Nullable Environment environment, @Nullable ResourceLoader resourceLoader) {
 
+		/**
+		 *  ConditionContext 上下文 {@link ConditionContextImpl#ConditionContextImpl(BeanDefinitionRegistry, Environment, ResourceLoader)}
+		 */
 		this.context = new ConditionContextImpl(registry, environment, resourceLoader);
 	}
 
@@ -76,6 +79,8 @@ class ConditionEvaluator {
 	 * @param metadata the meta data
 	 * @param phase the phase of the call
 	 * @return if the item should be skipped
+	 *
+	 * 【 判断当前标注类是否应该被跳过 】
 	 */
 	public boolean shouldSkip(@Nullable AnnotatedTypeMetadata metadata, @Nullable ConfigurationPhase phase) {
 		if (metadata == null || !metadata.isAnnotated(Conditional.class.getName())) {
@@ -85,8 +90,16 @@ class ConditionEvaluator {
 		if (phase == null) {
 			if (metadata instanceof AnnotationMetadata &&
 					ConfigurationClassUtils.isConfigurationCandidate((AnnotationMetadata) metadata)) {
+
+				/*
+				 *  PARSE_CONFIGURATION, Configuration Class 解析阶段
+				 */
 				return shouldSkip(metadata, ConfigurationPhase.PARSE_CONFIGURATION);
 			}
+
+			/*
+			 *  REGISTER_BEAN Bean 注册阶段。
+			 */
 			return shouldSkip(metadata, ConfigurationPhase.REGISTER_BEAN);
 		}
 
