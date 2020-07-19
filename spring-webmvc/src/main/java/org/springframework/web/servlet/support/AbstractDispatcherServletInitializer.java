@@ -57,7 +57,14 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 	 */
 	public static final String DEFAULT_SERVLET_NAME = "dispatcher";
 
-
+	/**
+	 *
+	 * AbstractDispatcherServletInitializer 为 `AbstractContextLoaderInitializer` 子类。
+	 * 弥补了父类中没有注册 `DispatcherServlet` 的遗憾，不过并没有实现父类中 {@link #createRootApplicationContext()} 方法。
+	 *
+	 * @param servletContext
+	 * @throws ServletException
+	 */
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
 		super.onStartup(servletContext);

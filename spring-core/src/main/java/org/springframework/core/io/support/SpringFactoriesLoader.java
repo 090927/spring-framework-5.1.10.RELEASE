@@ -116,9 +116,25 @@ public final class SpringFactoriesLoader {
 	 * {@code null} to use the default
 	 * @throws IllegalArgumentException if an error occurs while loading factory names
 	 * @see #loadFactories
+	 *
+	 *
+	 * 	SpringFactoriesLoader 是 Spring Framework 工厂机制的加载器。
+	 * 		1、loadFactoryNames() 原理
+	 *
+	 * 			1、搜索指定 ClassLoader 下的所有 `META-INF/spring.factories`
+	 *
+	 * 		  	2、将 一个或多个 `META-INF/spring-factories` 资源内容作为 Properties 文件读取，
+	 * 		  	  	合并为一个Key，为接口的全名、value 为实现类全类名列表 Map，
+	 *
+	 * 		 	3、再从返回 Map 中查找并返回方法指定的类名所映射的实现类全类名列表。
+	 *
 	 */
 	public static List<String> loadFactoryNames(Class<?> factoryClass, @Nullable ClassLoader classLoader) {
 		String factoryClassName = factoryClass.getName();
+
+		/**
+		 * {@link #loadSpringFactories(ClassLoader)}
+		 */
 		return loadSpringFactories(classLoader).getOrDefault(factoryClassName, Collections.emptyList());
 	}
 
@@ -129,6 +145,10 @@ public final class SpringFactoriesLoader {
 		}
 
 		try {
+
+			/*
+			 *  读取所有 【 META-INF/spring.factories 】
+			 */
 			Enumeration<URL> urls = (classLoader != null ?
 					classLoader.getResources(FACTORIES_RESOURCE_LOCATION) :
 					ClassLoader.getSystemResources(FACTORIES_RESOURCE_LOCATION));
