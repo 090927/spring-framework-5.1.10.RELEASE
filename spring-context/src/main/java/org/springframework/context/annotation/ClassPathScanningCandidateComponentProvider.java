@@ -151,6 +151,10 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 			registerDefaultFilters();
 		}
 		setEnvironment(environment);
+
+		/**
+		 * 构造函数中，初始化 “ resourcePatternResolver ”。
+		 */
 		setResourceLoader(null);
 	}
 
@@ -274,6 +278,10 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 */
 	@Override
 	public void setResourceLoader(@Nullable ResourceLoader resourceLoader) {
+
+		/**
+		 * resourcePatternResolver 字段将被Spring 应用上下文初始化，如果开发人员自定义实现，则该字段的赋值情况存在变数。
+		 */
 		this.resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);
 		this.metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
 		this.componentsIndex = CandidateComponentsIndexLoader.loadIndex(this.resourcePatternResolver.getClassLoader());

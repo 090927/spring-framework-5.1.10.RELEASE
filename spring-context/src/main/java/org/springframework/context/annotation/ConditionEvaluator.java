@@ -104,6 +104,10 @@ class ConditionEvaluator {
 		}
 
 		List<Condition> conditions = new ArrayList<>();
+
+		/**
+		 * getConditionClasses 获取所有 Condition 信息。
+		 */
 		for (String[] conditionClasses : getConditionClasses(metadata)) {
 			for (String conditionClass : conditionClasses) {
 				Condition condition = getCondition(conditionClass, this.context.getClassLoader());
@@ -118,6 +122,12 @@ class ConditionEvaluator {
 			if (condition instanceof ConfigurationCondition) {
 				requiredPhase = ((ConfigurationCondition) condition).getConfigurationPhase();
 			}
+
+			/**
+			 *   this.context 是通过构造器完成初始化。
+			 *
+			 * 【 核心 】进行匹配 {@link ProfileCondition#matches(ConditionContext, AnnotatedTypeMetadata)}
+			 */
 			if ((requiredPhase == null || requiredPhase == phase) && !condition.matches(this.context, metadata)) {
 				return true;
 			}
@@ -163,6 +173,15 @@ class ConditionEvaluator {
 			this.registry = registry;
 			this.beanFactory = deduceBeanFactory(registry);
 			this.environment = (environment != null ? environment : deduceEnvironment(registry));
+
+			/**
+			 * resourceLoader 属性的来源有两个，一个是来自外部参数传参、另一个是获取 BeanDefinitionRegistry 和 ResourceLoader 双接口实现对象。
+			 *
+			 *  1、AnnotatedBeanDefinitionReader 构造函数中（resourceLoader == null ）
+			 *  2、ConfigurationClassBeanDefinitionReader 构造函数。
+			 *  3、ConfigurationClassParser 构造函数。
+			 *
+			 */
 			this.resourceLoader = (resourceLoader != null ? resourceLoader : deduceResourceLoader(registry));
 			this.classLoader = deduceClassLoader(resourceLoader, this.beanFactory);
 		}
