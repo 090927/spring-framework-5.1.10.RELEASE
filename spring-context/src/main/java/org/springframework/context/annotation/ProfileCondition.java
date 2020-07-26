@@ -33,11 +33,16 @@ class ProfileCondition implements Condition {
 
 	@Override
 	public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+
+		// 获取 “Profile” 所有的属性方法值。
 		MultiValueMap<String, Object> attrs = metadata.getAllAnnotationAttributes(Profile.class.getName());
 		if (attrs != null) {
 			for (Object value : attrs.get("value")) {
 
 				/**
+				 *  1、“ Profiles.of() ” 最终调用 {@link org.springframework.core.env.ProfilesParser.ParsedProfiles#parse(String...)}
+				 *  	对象参数进行解析。最终，调用 “ ParsedProfiles ” 构造函数进行初始化。
+				 *
 				 *  Profile 匹配 {@link org.springframework.core.env.AbstractEnvironment#acceptsProfiles(Profiles)}
 				 */
 				if (context.getEnvironment().acceptsProfiles(Profiles.of((String[]) value))) {

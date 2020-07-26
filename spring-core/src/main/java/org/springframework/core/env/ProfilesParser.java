@@ -42,6 +42,10 @@ final class ProfilesParser {
 		Assert.notEmpty(expressions, "Must specify at least one profile");
 		Profiles[] parsed = new Profiles[expressions.length];
 		for (int i = 0; i < expressions.length; i++) {
+
+			/**
+			 * 解析 “Profiles[]” {@link #parseExpression(String)}
+			 */
 			parsed[i] = parseExpression(expressions[i]);
 		}
 		return new ParsedProfiles(expressions, parsed);
@@ -156,6 +160,8 @@ final class ProfilesParser {
 
 		@Override
 		public boolean matches(Predicate<String> activeProfiles) {
+
+			// this.parsed 在构造函数中，进行初始化
 			for (Profiles candidate : this.parsed) {
 				if (candidate.matches(activeProfiles)) {
 					return true;

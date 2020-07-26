@@ -167,6 +167,10 @@ class ConfigurationClassParser {
 					parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
 				}
 				else if (bd instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) bd).hasBeanClass()) {
+
+					/**
+					 *  {@link #parse(Class, String)}
+					 */
 					parse(((AbstractBeanDefinition) bd).getBeanClass(), holder.getBeanName());
 				}
 				else {
@@ -192,6 +196,10 @@ class ConfigurationClassParser {
 	}
 
 	protected final void parse(Class<?> clazz, String beanName) throws IOException {
+
+		/**
+		 *  {@link #processConfigurationClass(ConfigurationClass)}
+		 */
 		processConfigurationClass(new ConfigurationClass(clazz, beanName));
 	}
 
@@ -303,6 +311,9 @@ class ConfigurationClassParser {
 		}
 
 		// Process any @Import annotations
+		/**
+		 *  {@link #processImports(ConfigurationClass, SourceClass, Collection, boolean)}
+		 */
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
 
 		// Process any @ImportResource annotations
@@ -564,11 +575,19 @@ class ConfigurationClassParser {
 						ParserStrategyUtils.invokeAwareMethods(
 								selector, this.environment, this.resourceLoader, this.registry);
 						if (selector instanceof DeferredImportSelector) {
+
+							/**
+							 * 【 deferredImportSelectorHandler 】{@link DeferredImportSelectorHandler#handle(ConfigurationClass, DeferredImportSelector)}
+							 */
 							this.deferredImportSelectorHandler.handle(configClass, (DeferredImportSelector) selector);
 						}
 						else {
 							String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata());
 							Collection<SourceClass> importSourceClasses = asSourceClasses(importClassNames);
+
+							/**
+							 * 递归调用 {@link #processImports(ConfigurationClass, SourceClass, Collection, boolean)}
+							 */
 							processImports(configClass, currentSourceClass, importSourceClasses, false);
 						}
 					}
@@ -587,6 +606,10 @@ class ConfigurationClassParser {
 						// process it as an @Configuration class
 						this.importStack.registerImport(
 								currentSourceClass.getMetadata(), candidate.getMetadata().getClassName());
+
+						/**
+						 *  解析 ConfigurationClass {@link #processConfigurationClass(ConfigurationClass)}
+						 */
 						processConfigurationClass(candidate.asConfigClass(configClass));
 					}
 				}
@@ -757,6 +780,10 @@ class ConfigurationClassParser {
 			if (this.deferredImportSelectors == null) {
 				DeferredImportSelectorGroupingHandler handler = new DeferredImportSelectorGroupingHandler();
 				handler.register(holder);
+
+				/**
+				 *  {@link DeferredImportSelectorGroupingHandler#processGroupImports()}
+				 */
 				handler.processGroupImports();
 			}
 			else {
@@ -802,6 +829,8 @@ class ConfigurationClassParser {
 
 		public void processGroupImports() {
 			for (DeferredImportSelectorGrouping grouping : this.groupings.values()) {
+
+				// getImports
 				grouping.getImports().forEach(entry -> {
 					ConfigurationClass configurationClass = this.configurationClasses.get(
 							entry.getMetadata());
