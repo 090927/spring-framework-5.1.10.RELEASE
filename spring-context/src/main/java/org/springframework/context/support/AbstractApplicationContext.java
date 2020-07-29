@@ -387,6 +387,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * or a payload object to be turned into a {@link PayloadApplicationEvent})
 	 * @param eventType the resolved event type, if known
 	 * @since 4.2
+	 *
+	 *
 	 */
 	protected void publishEvent(Object event, @Nullable ResolvableType eventType) {
 		Assert.notNull(event, "Event must not be null");
@@ -408,6 +410,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			this.earlyApplicationEvents.add(applicationEvent);
 		}
 		else {
+			/**
+			 * 广播事件 {@link SimpleApplicationEventMulticaster#multicastEvent(ApplicationEvent, ResolvableType)}
+			 */
 			getApplicationEventMulticaster().multicastEvent(applicationEvent, eventType);
 		}
 
@@ -512,8 +517,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	public void addApplicationListener(ApplicationListener<?> listener) {
 		Assert.notNull(listener, "ApplicationListener must not be null");
 		if (this.applicationEventMulticaster != null) {
+
+			// 添加监听器
 			this.applicationEventMulticaster.addApplicationListener(listener);
 		}
+
+		// 添加 集合中。
 		this.applicationListeners.add(listener);
 	}
 
@@ -521,6 +530,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * Return the list of statically specified ApplicationListeners.
 	 */
 	public Collection<ApplicationListener<?>> getApplicationListeners() {
+
+		/**
+		 *  调用 “addApplicationListener” 方法，存储监听器。 {@link #addApplicationListener(ApplicationListener)}
+		 */
 		return this.applicationListeners;
 	}
 
@@ -557,7 +570,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			/**
 			 * 3、对IOC容器做一些预处理（设置一些公共属性）
 			 *
-			 * 为BeanFactory 配置容器特性。例如：容器加载器、事件处理器
+			 * 为BeanFactory 配置容器特性。例如：容器加载器、事件处理器 {@link #prepareBeanFactory(ConfigurableListableBeanFactory)}
 			 */
 			prepareBeanFactory(beanFactory);
 
@@ -606,7 +619,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				/**
 				 * 8、
 				 *
-				 * 初始化容器事件传播
+				 * 初始化容器事件传播 {@link #initApplicationEventMulticaster()}
 				 */
 				initApplicationEventMulticaster();
 
@@ -624,7 +637,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				/**
 				 * 10、
 				 *
-				 * 为事件传播注册事件监听器
+				 * 为事件传播注册事件监听器 {@link #registerListeners()}
 				 */
 				registerListeners();
 
@@ -643,7 +656,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				/**
 				 * 12、完成刷新时，需要发布对应的事件
 				 *
-				 * 初始化容器的生命周期事件处理器。
+				 * 初始化容器的生命周期事件处理器。{@link #finishRefresh()}
 				 */
 				finishRefresh();
 			}
@@ -881,6 +894,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void initApplicationEventMulticaster() {
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
+
+		/**
+		 *  APPLICATION_EVENT_MULTICASTER_BEAN_NAME = "applicationEventMulticaster"
+		 *
+		 *  首先判断当前 Spring 应用上下文是否存在 “ applicationEventMulticaster ” 且类型为 ApplicationEventMulticaster 的SpringBean。
+		 *
+		 */
 		if (beanFactory.containsLocalBean(APPLICATION_EVENT_MULTICASTER_BEAN_NAME)) {
 			this.applicationEventMulticaster =
 					beanFactory.getBean(APPLICATION_EVENT_MULTICASTER_BEAN_NAME, ApplicationEventMulticaster.class);
@@ -889,6 +909,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			}
 		}
 		else {
+
+			// 如果不存在，则将其构造为 SimpleApplicationEventMulticaster 。
 			this.applicationEventMulticaster = new SimpleApplicationEventMulticaster(beanFactory);
 			beanFactory.registerSingleton(APPLICATION_EVENT_MULTICASTER_BEAN_NAME, this.applicationEventMulticaster);
 			if (logger.isTraceEnabled()) {
@@ -941,6 +963,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void registerListeners() {
 		// Register statically specified listeners first.
+
+		/**
+		 * 获取监听器 {@link #getApplicationListeners()}
+		 */
 		for (ApplicationListener<?> listener : getApplicationListeners()) {
 			getApplicationEventMulticaster().addApplicationListener(listener);
 		}
@@ -949,6 +975,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// uninitialized to let post-processors apply to them!
 		String[] listenerBeanNames = getBeanNamesForType(ApplicationListener.class, true, false);
 		for (String listenerBeanName : listenerBeanNames) {
+
+			/**
+			 * 当前 Spring 应用上下文将 ApplicationListener Bean 名称集合也追加值 applicationEventMulticaster
+			 *  {@link org.springframework.context.event.AbstractApplicationEventMulticaster#addApplicationListenerBean(String)}
+			 */
 			getApplicationEventMulticaster().addApplicationListenerBean(listenerBeanName);
 		}
 
@@ -1020,6 +1051,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		getLifecycleProcessor().onRefresh();
 
 		// Publish the final event.
+		/**
+		 * 发布，应用上下文就绪事件 {@link #publishEvent(Object, ResolvableType)}
+		 *
+		 *   就绪事件 {@link ContextRefreshedEvent#ContextRefreshedEvent(ApplicationContext)}
+		 */
 		publishEvent(new ContextRefreshedEvent(this));
 
 		// Participate in LiveBeansView MBean, if active.
@@ -1133,6 +1169,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 			try {
 				// Publish shutdown event.
+
+				/**
+				 * 发布，Spring 应用上下文关闭事件。
+				 */
 				publishEvent(new ContextClosedEvent(this));
 			}
 			catch (Throwable ex) {
@@ -1142,6 +1182,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			// Stop all Lifecycle beans, to avoid delays during individual destruction.
 			if (this.lifecycleProcessor != null) {
 				try {
+
+					// Lifecycle Bean 进入 onClone() 生命周期回调。
 					this.lifecycleProcessor.onClose();
 				}
 				catch (Throwable ex) {
@@ -1150,6 +1192,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			}
 
 			// Destroy all cached singletons in the context's BeanFactory.
+
+			/**
+			 * 【核心】将 ApplicationListener Bean 从 ApplicationEventMulticaster 关联缓存中移除。{@link #destroyBeans()}
+			 */
 			destroyBeans();
 
 			// Close the state of this context itself.
@@ -1484,6 +1530,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	@Override
 	public void stop() {
 		getLifecycleProcessor().stop();
+
+		/**
+		 * 发布停止事件, 关联 LifecycleProcessor 实例触发所有 Lifecycle Bean
+		 */
 		publishEvent(new ContextStoppedEvent(this));
 	}
 

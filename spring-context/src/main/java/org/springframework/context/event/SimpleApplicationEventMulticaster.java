@@ -80,6 +80,8 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 	 * transaction association) unless the TaskExecutor explicitly supports this.
 	 * @see org.springframework.core.task.SyncTaskExecutor
 	 * @see org.springframework.core.task.SimpleAsyncTaskExecutor
+	 *
+	 * 	【 异步处理监听事件 】
 	 */
 	public void setTaskExecutor(@Nullable Executor taskExecutor) {
 		this.taskExecutor = taskExecutor;
@@ -121,7 +123,10 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 		return this.errorHandler;
 	}
 
-
+	/**
+	 * 广播事件
+	 * @param event the event to multicast
+	 */
 	@Override
 	public void multicastEvent(ApplicationEvent event) {
 		multicastEvent(event, resolveDefaultEventType(event));
@@ -131,8 +136,16 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 	public void multicastEvent(final ApplicationEvent event, @Nullable ResolvableType eventType) {
 		ResolvableType type = (eventType != null ? eventType : resolveDefaultEventType(event));
 		Executor executor = getTaskExecutor();
+
+		/**
+		 * 获取 事件对应的监听器 {@link #getApplicationListeners(ApplicationEvent, ResolvableType)}
+		 */
 		for (ApplicationListener<?> listener : getApplicationListeners(event, type)) {
 			if (executor != null) {
+
+				/**
+				 *  调用对应监听器  {@link #invokeListener(ApplicationListener, ApplicationEvent)}
+				 */
 				executor.execute(() -> invokeListener(listener, event));
 			}
 			else {
@@ -155,6 +168,8 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 		ErrorHandler errorHandler = getErrorHandler();
 		if (errorHandler != null) {
 			try {
+
+				// 【 doInvokeListener 】
 				doInvokeListener(listener, event);
 			}
 			catch (Throwable err) {

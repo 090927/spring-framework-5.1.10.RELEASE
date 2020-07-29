@@ -71,6 +71,8 @@ public interface ApplicationEventMulticaster {
 	 * <p>Consider using {@link #multicastEvent(ApplicationEvent, ResolvableType)}
 	 * if possible as it provides a better support for generics-based events.
 	 * @param event the event to multicast
+	 *
+	 *              【 广播事件 】实现类 {@link SimpleApplicationEventMulticaster#multicastEvent(ApplicationEvent)}
 	 */
 	void multicastEvent(ApplicationEvent event);
 
@@ -81,6 +83,8 @@ public interface ApplicationEventMulticaster {
 	 * @param event the event to multicast
 	 * @param eventType the type of event (can be null)
 	 * @since 4.2
+	 *
+	 * 			  【 广播事件 】实现类 {@link SimpleApplicationEventMulticaster#multicastEvent(ApplicationEvent, ResolvableType)}
 	 */
 	void multicastEvent(ApplicationEvent event, @Nullable ResolvableType eventType);
 

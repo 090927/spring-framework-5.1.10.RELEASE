@@ -58,12 +58,26 @@ import org.springframework.util.ObjectUtils;
  * @since 1.2.3
  * @see #getApplicationListeners(ApplicationEvent, ResolvableType)
  * @see SimpleApplicationEventMulticaster
+ *
+ *
+ * 	AbstractApplicationEventMulticaster 与 ApplicationListener 应该是一对多的关系。
+ * 	AbstractApplicationEventMulticaster 与 ListenerRetriever 也是一对多的关系。
+ *
  */
 public abstract class AbstractApplicationEventMulticaster
 		implements ApplicationEventMulticaster, BeanClassLoaderAware, BeanFactoryAware {
 
 	private final ListenerRetriever defaultRetriever = new ListenerRetriever(false);
 
+	/**
+	 * AbstractApplicationEventMulticaster 将 ApplicationListener 做了分类。
+	 *
+	 * 	ListenerCacheKey 为 Key，关联事件类型和数据源类型。
+	 * 		1、eventType 和 sourceType 作为 equals 和 hashCode 方法的计算因子。也是帮助 {@link #retrieverCache} 出重。
+	 *
+	 * 	ListenerRetriever 为 Value 的Map 类型的缓存
+	 *
+	 */
 	final Map<ListenerCacheKey, ListenerRetriever> retrieverCache = new ConcurrentHashMap<>(64);
 
 	@Nullable
@@ -110,6 +124,8 @@ public abstract class AbstractApplicationEventMulticaster
 			if (singletonTarget instanceof ApplicationListener) {
 				this.defaultRetriever.applicationListeners.remove(singletonTarget);
 			}
+
+			// 使用 Set 集合，进行去重。
 			this.defaultRetriever.applicationListeners.add(listener);
 			this.retrieverCache.clear();
 		}
@@ -118,6 +134,8 @@ public abstract class AbstractApplicationEventMulticaster
 	@Override
 	public void addApplicationListenerBean(String listenerBeanName) {
 		synchronized (this.retrievalMutex) {
+
+			// 使用 Set 集合，进行去重。
 			this.defaultRetriever.applicationListenerBeans.add(listenerBeanName);
 			this.retrieverCache.clear();
 		}
@@ -168,6 +186,11 @@ public abstract class AbstractApplicationEventMulticaster
 	 * @param eventType the event type
 	 * @return a Collection of ApplicationListeners
 	 * @see org.springframework.context.ApplicationListener
+	 *
+	 *
+	 *   获取事件监听, 返回 ApplicationEvent 关联的 ApplicationListener 集合。
+	 *
+	 *   {@link ResolvableType} 是 Spring Framework 为简化Java 反射而提供的组件, 能够轻松获取泛型等。
 	 */
 	protected Collection<ApplicationListener<?>> getApplicationListeners(
 			ApplicationEvent event, ResolvableType eventType) {
@@ -179,6 +202,10 @@ public abstract class AbstractApplicationEventMulticaster
 		// Quick check for existing entry on ConcurrentHashMap...
 		ListenerRetriever retriever = this.retrieverCache.get(cacheKey);
 		if (retriever != null) {
+
+			/**
+			 * 获取 所有事件监听 {@link ListenerRetriever#getApplicationListeners()}
+			 */
 			return retriever.getApplicationListeners();
 		}
 
@@ -376,6 +403,10 @@ public abstract class AbstractApplicationEventMulticaster
 		}
 
 		public Collection<ApplicationListener<?>> getApplicationListeners() {
+
+			/**
+			 * 获取全部  listener =  applicationListeners + applicationListenerBeans
+			 */
 			List<ApplicationListener<?>> allListeners = new ArrayList<>(
 					this.applicationListeners.size() + this.applicationListenerBeans.size());
 			allListeners.addAll(this.applicationListeners);

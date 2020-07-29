@@ -568,6 +568,8 @@ class ConfigurationClassParser {
 			this.importStack.push(configClass);
 			try {
 				for (SourceClass candidate : importCandidates) {
+
+					// 对 ImportSelector 类型的类进行处理
 					if (candidate.isAssignable(ImportSelector.class)) {
 						// Candidate class is an ImportSelector -> delegate to it to determine imports
 						Class<?> candidateClass = candidate.loadClass();
@@ -577,6 +579,7 @@ class ConfigurationClassParser {
 						if (selector instanceof DeferredImportSelector) {
 
 							/**
+							 *  该方法内部会将该Selector保存到一个集合【deferredImportSelectors】中
 							 * 【 deferredImportSelectorHandler 】{@link DeferredImportSelectorHandler#handle(ConfigurationClass, DeferredImportSelector)}
 							 */
 							this.deferredImportSelectorHandler.handle(configClass, (DeferredImportSelector) selector);
@@ -586,7 +589,7 @@ class ConfigurationClassParser {
 							Collection<SourceClass> importSourceClasses = asSourceClasses(importClassNames);
 
 							/**
-							 * 递归调用 {@link #processImports(ConfigurationClass, SourceClass, Collection, boolean)}
+							 * 递归进行解析 {@link #processImports(ConfigurationClass, SourceClass, Collection, boolean)}
 							 */
 							processImports(configClass, currentSourceClass, importSourceClasses, false);
 						}
@@ -604,6 +607,8 @@ class ConfigurationClassParser {
 					else {
 						// Candidate class not an ImportSelector or ImportBeanDefinitionRegistrar ->
 						// process it as an @Configuration class
+
+						// 当前类不是ImportSelector或ImportBeanDefinitionRegistrar类型，直接让其走@Configuration类的处理流程
 						this.importStack.registerImport(
 								currentSourceClass.getMetadata(), candidate.getMetadata().getClassName());
 
