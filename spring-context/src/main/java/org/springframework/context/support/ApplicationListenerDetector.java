@@ -94,6 +94,11 @@ class ApplicationListenerDetector implements DestructionAwareBeanPostProcessor, 
 		if (bean instanceof ApplicationListener) {
 			try {
 				ApplicationEventMulticaster multicaster = this.applicationContext.getApplicationEventMulticaster();
+
+				/**
+				 *  1、removeApplicationListener
+				 *  2、removeApplicationListenerBean
+				 */
 				multicaster.removeApplicationListener((ApplicationListener<?>) bean);
 				multicaster.removeApplicationListenerBean(beanName);
 			}

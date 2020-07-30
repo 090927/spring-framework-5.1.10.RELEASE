@@ -239,6 +239,10 @@ class DisposableBeanAdapter implements DisposableBean, Runnable, Serializable {
 	public void destroy() {
 		if (!CollectionUtils.isEmpty(this.beanPostProcessors)) {
 			for (DestructionAwareBeanPostProcessor processor : this.beanPostProcessors) {
+
+				/**
+				 *  【 postProcessBeforeDestruction 】{@link org.springframework.context.support.ApplicationListenerDetector#postProcessBeforeDestruction
+				 */
 				processor.postProcessBeforeDestruction(this.bean, this.beanName);
 			}
 		}

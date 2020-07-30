@@ -41,6 +41,7 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry;
 import org.springframework.beans.support.ResourceEditorRegistrar;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -1227,6 +1228,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see org.springframework.beans.factory.config.ConfigurableBeanFactory#destroySingletons()
 	 */
 	protected void destroyBeans() {
+
+		/**
+		 *  销毁bean【 destroySingletons 】{@link DefaultSingletonBeanRegistry#destroySingletons()}
+		 */
 		getBeanFactory().destroySingletons();
 	}
 
