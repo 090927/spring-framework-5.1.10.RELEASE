@@ -32,12 +32,17 @@ import org.springframework.lang.Nullable;
  * @since 3.0
  * @see GenericApplicationListener
  * @see GenericApplicationListenerAdapter
+ *
+ * 	【 多个事件监听 】
+ *
  */
 public interface SmartApplicationListener extends ApplicationListener<ApplicationEvent>, Ordered {
 
 	/**
 	 * Determine whether this listener actually supports the given event type.
 	 * @param eventType the event type (never {@code null})
+	 *
+	 *   支持的事件类型
 	 */
 	boolean supportsEventType(Class<? extends ApplicationEvent> eventType);
 

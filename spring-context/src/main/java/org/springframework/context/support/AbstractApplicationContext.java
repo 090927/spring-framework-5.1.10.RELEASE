@@ -389,6 +389,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @param eventType the resolved event type, if known
 	 * @since 4.2
 	 *
+	 *  【 事件发布 】
 	 *
 	 */
 	protected void publishEvent(Object event, @Nullable ResolvableType eventType) {

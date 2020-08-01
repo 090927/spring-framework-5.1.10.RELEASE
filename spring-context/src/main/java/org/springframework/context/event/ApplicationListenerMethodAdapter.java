@@ -122,6 +122,11 @@ public class ApplicationListenerMethodAdapter implements GenericApplicationListe
 		return Collections.singletonList(ResolvableType.forMethodParameter(method, 0));
 	}
 
+	/**
+	 * 获取优先级。
+	 * @param method
+	 * @return
+	 */
 	private static int resolveOrder(Method method) {
 		Order ann = AnnotatedElementUtils.findMergedAnnotation(method, Order.class);
 		return (ann != null ? ann.value() : 0);

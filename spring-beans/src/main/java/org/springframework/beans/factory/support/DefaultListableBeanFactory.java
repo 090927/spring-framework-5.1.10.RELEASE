@@ -872,6 +872,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		// Trigger post-initialization callback for all applicable beans...
 		for (String beanName : beanNames) {
 			Object singletonInstance = getSingleton(beanName);
+
+			/**
+			 * 执行 @EventListener 生命周期处理器。
+			 *  EventListenerMethodProcessor 是 SmartInitializingSingleton
+			 */
 			if (singletonInstance instanceof SmartInitializingSingleton) {
 				final SmartInitializingSingleton smartSingleton = (SmartInitializingSingleton) singletonInstance;
 				if (System.getSecurityManager() != null) {
@@ -881,6 +886,12 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					}, getAccessControlContext());
 				}
 				else {
+
+					/**
+					 * 在当前 Spring 容器中 Bean 初始化之后执行，并在，方法结束之前调用。
+					 *
+					 *    【 重点 】{@link org.springframework.context.event.EventListenerMethodProcessor#afterSingletonsInstantiated()}
+					 */
 					smartSingleton.afterSingletonsInstantiated();
 				}
 			}

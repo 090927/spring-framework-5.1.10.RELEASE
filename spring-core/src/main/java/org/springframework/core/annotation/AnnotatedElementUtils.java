@@ -693,6 +693,9 @@ public abstract class AnnotatedElementUtils {
 	 * @see #findAllMergedAnnotations(AnnotatedElement, Class)
 	 * @see #findMergedAnnotationAttributes(AnnotatedElement, String, boolean, boolean)
 	 * @see #getMergedAnnotationAttributes(AnnotatedElement, Class)
+	 *
+	 *
+	 *  方法筛选的规则是仅判断 bean 中所有 public 方法是否标注 `annotationType`
 	 */
 	@Nullable
 	public static <A extends Annotation> A findMergedAnnotation(AnnotatedElement element, Class<A> annotationType) {

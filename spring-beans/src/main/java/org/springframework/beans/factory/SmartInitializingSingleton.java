@@ -52,6 +52,9 @@ public interface SmartInitializingSingleton {
 	 * lazily initialized on demand after {@link BeanFactory} bootstrap,
 	 * and not for any other bean scope either. Carefully use it for beans
 	 * with the intended bootstrap semantics only.
+	 *
+	 *
+	 *  【 单体Bean 预实例化阶段 】
 	 */
 	void afterSingletonsInstantiated();
 

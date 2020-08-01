@@ -402,6 +402,10 @@ public abstract class AbstractApplicationEventMulticaster
 			this.preFiltered = preFiltered;
 		}
 
+		/**
+		 * 是返回 ApplicationEvent 关联的 ApplicationListener 集合。
+		 * @return
+		 */
 		public Collection<ApplicationListener<?>> getApplicationListeners() {
 
 			/**

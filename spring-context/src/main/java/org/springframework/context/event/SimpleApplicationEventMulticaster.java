@@ -81,7 +81,7 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 	 * @see org.springframework.core.task.SyncTaskExecutor
 	 * @see org.springframework.core.task.SimpleAsyncTaskExecutor
 	 *
-	 * 	【 异步处理监听事件 】
+	 * 	【 异步处理监听事件 】目前 Spring、SpringBoot 都未使用该方法提升为异步执行。
 	 */
 	public void setTaskExecutor(@Nullable Executor taskExecutor) {
 		this.taskExecutor = taskExecutor;

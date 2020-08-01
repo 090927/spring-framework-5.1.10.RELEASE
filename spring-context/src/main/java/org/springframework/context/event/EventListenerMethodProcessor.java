@@ -35,6 +35,8 @@ import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
@@ -95,7 +97,10 @@ public class EventListenerMethodProcessor
 		this.eventListenerFactories = factories;
 	}
 
-
+	/**
+	 *  1、注册到容器，是 {@link org.springframework.context.annotation.AnnotationConfigUtils#registerAnnotationConfigProcessors(BeanDefinitionRegistry, Object)}
+	 *  2、实例化，在 {@link DefaultListableBeanFactory#preInstantiateSingletons()}
+	 */
 	@Override
 	public void afterSingletonsInstantiated() {
 		ConfigurableListableBeanFactory beanFactory = this.beanFactory;
@@ -130,6 +135,10 @@ public class EventListenerMethodProcessor
 						}
 					}
 					try {
+
+						/**
+						 * 【 processBean 】{@link #processBean(String, Class)}
+						 */
 						processBean(beanName, type);
 					}
 					catch (Throwable ex) {
@@ -148,8 +157,13 @@ public class EventListenerMethodProcessor
 
 			Map<Method, EventListener> annotatedMethods = null;
 			try {
+				/**
+				 * 首先，从指定bean 类型，中查找所有标记 @EventListener 的方法，
+				 */
 				annotatedMethods = MethodIntrospector.selectMethods(targetType,
 						(MethodIntrospector.MetadataLookup<EventListener>) method ->
+
+								// 方法筛选的规则是仅判断 bean 中所有 public 方法是否标注 @EventListener.
 								AnnotatedElementUtils.findMergedAnnotation(method, EventListener.class));
 			}
 			catch (Throwable ex) {
@@ -176,10 +190,20 @@ public class EventListenerMethodProcessor
 						if (factory.supportsMethod(method)) {
 							Method methodToUse = AopUtils.selectInvocableMethod(method, context.getType(beanName));
 							ApplicationListener<?> applicationListener =
+
+									/**
+									 * {@link DefaultEventListenerFactory#createApplicationListener(String, Class, Method)}
+									 */
 									factory.createApplicationListener(beanName, targetType, methodToUse);
+
+									// @EventListener 方法适配为 ApplicationListener 对象。
 							if (applicationListener instanceof ApplicationListenerMethodAdapter) {
 								((ApplicationListenerMethodAdapter) applicationListener).init(context, this.evaluator);
 							}
+
+							/**
+							 * 添加监听器，到集合。
+							 */
 							context.addApplicationListener(applicationListener);
 							break;
 						}
