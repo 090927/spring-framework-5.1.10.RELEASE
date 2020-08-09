@@ -83,11 +83,16 @@ class ConditionEvaluator {
 	 * 【 判断当前标注类是否应该被跳过 】
 	 */
 	public boolean shouldSkip(@Nullable AnnotatedTypeMetadata metadata, @Nullable ConfigurationPhase phase) {
+
+		// 1. 如果这个类没有被 @Conditional注解所修饰，不会skip
 		if (metadata == null || !metadata.isAnnotated(Conditional.class.getName())) {
 			return false;
 		}
 
+		// 2. 如果参数中沒有设置条件注解的生效阶段
 		if (phase == null) {
+
+			// 是配置类的话直接使用 PARSE_CONFIGURATION阶段
 			if (metadata instanceof AnnotationMetadata &&
 					ConfigurationClassUtils.isConfigurationCandidate((AnnotationMetadata) metadata)) {
 
@@ -105,8 +110,8 @@ class ConditionEvaluator {
 
 		List<Condition> conditions = new ArrayList<>();
 
-		/**
-		 * getConditionClasses 获取所有 Condition 信息。
+		/*
+		 *  3. 获取配置类的条件注解得到条件数据，并添加到集合中  getConditionClasses 获取所有 Condition 信息。
 		 */
 		for (String[] conditionClasses : getConditionClasses(metadata)) {
 			for (String conditionClass : conditionClasses) {
@@ -118,6 +123,7 @@ class ConditionEvaluator {
 		// 按照Order 进行排序。
 		AnnotationAwareOrderComparator.sort(conditions);
 
+		// 4. 遍历conditions,进行判断
 		for (Condition condition : conditions) {
 			ConfigurationPhase requiredPhase = null;
 			if (condition instanceof ConfigurationCondition) {

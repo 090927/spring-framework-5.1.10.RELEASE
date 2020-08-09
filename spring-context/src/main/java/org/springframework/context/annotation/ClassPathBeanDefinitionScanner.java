@@ -322,11 +322,17 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 				 * 如果扫描，不是Spring 注解Bean。则为Bean 设置默认值，设置Bean 的自动依赖注入装配属性。
 				 */
 				if (candidate instanceof AbstractBeanDefinition) {
+
+					/**
+					 *  设置默认值 {@link #postProcessBeanDefinition(AbstractBeanDefinition, String)}
+					 */
 					postProcessBeanDefinition((AbstractBeanDefinition) candidate, beanName);
 				}
 
 				// 如果是 Spring 注解 bean。则处理其同用注解。
 				if (candidate instanceof AnnotatedBeanDefinition) {
+
+					// 如果是 AnnotatedBeanDefinition 类型,则检查常用注解:如lazy等
 					AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
 				}
 
@@ -359,6 +365,10 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 * @param beanName the generated bean name for the given bean
 	 */
 	protected void postProcessBeanDefinition(AbstractBeanDefinition beanDefinition, String beanName) {
+
+		/**
+		 * 设置默认值 {@link AbstractBeanDefinition#applyDefaults(BeanDefinitionDefaults)}
+		 */
 		beanDefinition.applyDefaults(this.beanDefinitionDefaults);
 		if (this.autowireCandidatePatterns != null) {
 			beanDefinition.setAutowireCandidate(PatternMatchUtils.simpleMatch(this.autowireCandidatePatterns, beanName));

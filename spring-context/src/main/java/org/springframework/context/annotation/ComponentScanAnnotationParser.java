@@ -129,6 +129,10 @@ class ComponentScanAnnotationParser {
 				return declaringClass.equals(className);
 			}
 		});
+
+		/**
+		 * 【 扫描指定包 】{@link ClassPathBeanDefinitionScanner#doScan(String...)}
+		 */
 		return scanner.doScan(StringUtils.toStringArray(basePackages));
 	}
 
