@@ -148,11 +148,13 @@ public class UtilNamespaceHandler extends NamespaceHandlerSupport {
 			Set<Object> parsedSet = parserContext.getDelegate().parseSetElement(element, builder.getRawBeanDefinition());
 			builder.addPropertyValue("sourceSet", parsedSet);
 
+			// 解析 set-class标签
 			String setClass = element.getAttribute("set-class");
 			if (StringUtils.hasText(setClass)) {
 				builder.addPropertyValue("targetSetClass", setClass);
 			}
 
+			// 获取scope属性值
 			String scope = element.getAttribute(SCOPE_ATTRIBUTE);
 			if (StringUtils.hasLength(scope)) {
 				builder.setScope(scope);

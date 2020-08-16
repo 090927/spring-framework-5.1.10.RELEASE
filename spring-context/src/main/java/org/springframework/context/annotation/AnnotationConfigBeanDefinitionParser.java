@@ -18,6 +18,7 @@ package org.springframework.context.annotation;
 
 import java.util.Set;
 
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.w3c.dom.Element;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -39,12 +40,20 @@ import org.springframework.lang.Nullable;
  */
 public class AnnotationConfigBeanDefinitionParser implements BeanDefinitionParser {
 
+	/**
+	 *  标签解析器
+	 * @return
+	 */
 	@Override
 	@Nullable
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
 		Object source = parserContext.extractSource(element);
 
 		// Obtain bean definitions for all relevant BeanPostProcessors.
+
+		/**
+		 *  【 将后置处理器注册到 IOC 】 {@link AnnotationConfigUtils#registerAnnotationConfigProcessors(BeanDefinitionRegistry, Object)}
+		 */
 		Set<BeanDefinitionHolder> processorDefinitions =
 				AnnotationConfigUtils.registerAnnotationConfigProcessors(parserContext.getRegistry(), source);
 

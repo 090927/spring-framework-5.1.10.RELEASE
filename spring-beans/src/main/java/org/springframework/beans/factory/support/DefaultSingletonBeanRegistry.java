@@ -653,6 +653,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * if a corresponding disposable bean instance is found.
 	 * @param beanName the name of the bean
 	 * @see #destroyBean
+	 *
+	 *   【 销毁单例 bean 】
 	 */
 	public void destroySingleton(String beanName) {
 		// Remove a registered singleton of the given name, if any.
@@ -716,6 +718,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		}
 		if (containedBeans != null) {
 			for (String containedBeanName : containedBeans) {
+
+				// 这个地方还是递归调用，删除单例bean，当这个bean没有内部bean时递归结束
 				destroySingleton(containedBeanName);
 			}
 		}

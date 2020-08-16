@@ -68,6 +68,8 @@ public interface NamespaceHandler {
 	 * @param element the element that is to be parsed into one or more {@code BeanDefinitions}
 	 * @param parserContext the object encapsulating the current state of the parsing process
 	 * @return the primary {@code BeanDefinition} (can be {@code null} as explained above)
+	 *
+	 *    【 子类实现，注册 "BeanDefinitionParser" 】
 	 */
 	@Nullable
 	BeanDefinition parse(Element element, ParserContext parserContext);
@@ -90,6 +92,10 @@ public interface NamespaceHandler {
 	 * or simply the original bean definition if no decoration is required.
 	 * A {@code null} value is strictly speaking invalid, but will be leniently
 	 * treated like the case where the original bean definition gets returned.
+	 *
+	 *    【 解析元素返回 beanDefinition 】
+	 *
+	 *    这个是装饰方法：解析指定的节点成 beanDefinition 后包装成 beanDefinitionHolder。
 	 */
 	@Nullable
 	BeanDefinitionHolder decorate(Node source, BeanDefinitionHolder definition, ParserContext parserContext);

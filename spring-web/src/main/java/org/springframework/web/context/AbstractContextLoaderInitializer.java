@@ -17,6 +17,7 @@
 package org.springframework.web.context;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletException;
 
 import org.apache.commons.logging.Log;
@@ -45,8 +46,13 @@ public abstract class AbstractContextLoaderInitializer implements WebApplication
 	protected final Log logger = LogFactory.getLog(getClass());
 
 
+	/**
+	 * 容器，启动方法回调
+	 */
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
+
+		// 【 registerContextLoaderListener 】
 		registerContextLoaderListener(servletContext);
 	}
 
@@ -59,6 +65,13 @@ public abstract class AbstractContextLoaderInitializer implements WebApplication
 	protected void registerContextLoaderListener(ServletContext servletContext) {
 		WebApplicationContext rootAppContext = createRootApplicationContext();
 		if (rootAppContext != null) {
+			/**
+			 * 1、ContextLoaderListener 是 ServletContextListener 实现，监听 ServletContext 生命周期，
+			 * 	当Web 应用启动时，首先 Servlet 容器调用 ServletContextListener 实现类的默认构造器。
+			 *
+			 * 	2、随后 调用 {@link ContextLoaderListener#contextInitialized(ServletContextEvent)}  方法被调用。
+			 * 	3、当Web 应用容器关闭时，Servlet 容器则调用 {@link ContextLoaderListener#contextDestroyed(ServletContextEvent)}
+			 */
 			ContextLoaderListener listener = new ContextLoaderListener(rootAppContext);
 			listener.setContextInitializers(getRootApplicationContextInitializers());
 			servletContext.addListener(listener);

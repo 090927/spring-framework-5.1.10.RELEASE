@@ -564,6 +564,8 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 * @see #AUTOWIRE_AUTODETECT
 	 * @see #AUTOWIRE_CONSTRUCTOR
 	 * @see #AUTOWIRE_BY_TYPE
+	 *
+	 *   获取注入方式。
 	 */
 	public int getResolvedAutowireMode() {
 		if (this.autowireMode == AUTOWIRE_AUTODETECT) {
@@ -573,9 +575,13 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 			Constructor<?>[] constructors = getBeanClass().getConstructors();
 			for (Constructor<?> constructor : constructors) {
 				if (constructor.getParameterCount() == 0) {
+
+					// 根据名称注入
 					return AUTOWIRE_BY_TYPE;
 				}
 			}
+
+			// 根据类型注入。
 			return AUTOWIRE_CONSTRUCTOR;
 		}
 		else {

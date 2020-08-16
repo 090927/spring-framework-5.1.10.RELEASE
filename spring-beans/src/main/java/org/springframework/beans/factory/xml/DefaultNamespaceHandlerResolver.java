@@ -113,6 +113,8 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 	 * @return the located {@link NamespaceHandler}, or {@code null} if none found
 	 *
 	 * 【 注册 handlerMappings 】
+	 *
+	 *   注册 -> 调用子类实现的 init() 方法 ->
 	 */
 	@Override
 	@Nullable
@@ -133,12 +135,14 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 			String className = (String) handlerOrClassName;
 			try {
 				Class<?> handlerClass = ClassUtils.forName(className, this.classLoader);
+
+				// handler 必须是这个类型 NamespaceHandler
 				if (!NamespaceHandler.class.isAssignableFrom(handlerClass)) {
 					throw new FatalBeanException("Class [" + className + "] for namespace [" + namespaceUri +
 							"] does not implement the [" + NamespaceHandler.class.getName() + "] interface");
 				}
 
-				// init方法
+				// 创建 namespaceHandler 类
 				NamespaceHandler namespaceHandler = (NamespaceHandler) BeanUtils.instantiateClass(handlerClass);
 
 				/**
@@ -147,6 +151,8 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 				 * 例如 AOP {@link org.springframework.aop.config.AopNamespaceHandler#init()}
 				 * Context {@link org.springframework.context.config.ContextNamespaceHandler#init()}
 				 */
+
+				// 初始化 namespaceHandler
 				namespaceHandler.init();
 				handlerMappings.put(namespaceUri, namespaceHandler);
 				return namespaceHandler;
@@ -176,7 +182,10 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 					}
 					try {
 
-						// 在 META-INF/spring.handlers配置文件中有配置对应关系
+						/*
+						 * DEFAULT_HANDLER_MAPPINGS_LOCATION
+						 *   在 META-INF/spring.handlers配置文件中有配置对应关系
+						 */
 						Properties mappings =
 								PropertiesLoaderUtils.loadAllProperties(this.handlerMappingsLocation, this.classLoader);
 						if (logger.isTraceEnabled()) {

@@ -57,6 +57,9 @@ public abstract class AbstractSingleBeanDefinitionParser extends AbstractBeanDef
 	 * @throws IllegalStateException if the bean {@link Class} returned from
 	 * {@link #getBeanClass(org.w3c.dom.Element)} is {@code null}
 	 * @see #doParse
+	 *
+	 *
+	 *    解析bean 定义的模板方法。
 	 */
 	@Override
 	protected final AbstractBeanDefinition parseInternal(Element element, ParserContext parserContext) {

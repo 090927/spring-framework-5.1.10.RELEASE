@@ -305,6 +305,10 @@ public class BeanDefinitionParserDelegate {
 	 * @see #getDefaults()
 	 */
 	public void initDefaults(Element root, @Nullable BeanDefinitionParserDelegate parent) {
+
+		/**
+		 * {@link #populateDefaults(DocumentDefaultsDefinition, DocumentDefaultsDefinition, Element)}
+		 */
 		populateDefaults(this.defaults, (parent != null ? parent.defaults : null), root);
 		this.readerContext.fireDefaultsRegistered(this.defaults);
 	}
@@ -317,6 +321,9 @@ public class BeanDefinitionParserDelegate {
 	 * @param defaults the defaults to populate
 	 * @param parentDefaults the parent BeanDefinitionParserDelegate (if any) defaults to fall back to
 	 * @param root the root element of the current bean definition document (or nested beans element)
+	 *
+	 *   解析标签原始。
+	 *
 	 */
 	protected void populateDefaults(DocumentDefaultsDefinition defaults, @Nullable DocumentDefaultsDefinition parentDefaults, Element root) {
 		String lazyInit = root.getAttribute(DEFAULT_LAZY_INIT_ATTRIBUTE);
@@ -404,6 +411,10 @@ public class BeanDefinitionParserDelegate {
 	 */
 	@Nullable
 	public BeanDefinitionHolder parseBeanDefinitionElement(Element ele) {
+
+		/**
+		 * 具体实现 {@link #parseBeanDefinitionElement(Element, BeanDefinition)}
+		 */
 		return parseBeanDefinitionElement(ele, null);
 	}
 
@@ -545,10 +556,13 @@ public class BeanDefinitionParserDelegate {
 		try {
 
 			/**
-			 * 根据 classname、parent 属性创建 BeanDefinition.
+			 * 根据 classname、parent 属性创建 BeanDefinition. {@link #createBeanDefinition(String, String)}
 			 */
 			AbstractBeanDefinition bd = createBeanDefinition(className, parent);
-			// 对当前 bean 元素中配置的一些属性，进行解析和设置。
+
+			/**
+			 * 对当前 bean 元素中配置的一些属性，进行解析和设置。{@link #parseBeanDefinitionAttributes(Element, String, BeanDefinition, AbstractBeanDefinition)}
+			 */
 			parseBeanDefinitionAttributes(ele, beanName, containingBean, bd);
 			//  设置描述信息。
 			bd.setDescription(DomUtils.getChildElementValueByTagName(ele, DESCRIPTION_ELEMENT));
@@ -556,10 +570,14 @@ public class BeanDefinitionParserDelegate {
 			parseMetaElements(ele, bd);
 			//  lookup-method 属性解析
 			parseLookupOverrideSubElements(ele, bd.getMethodOverrides());
-			// replaced-method 属性解析
+			/**
+			 * replaced-method 属性解析 {@link #parseReplacedMethodSubElements(Element, MethodOverrides)}
+			 */
 			parseReplacedMethodSubElements(ele, bd.getMethodOverrides());
 
-			// 解析 bean 元素构造方法设置。
+			/**
+			 * 解析 bean 元素构造方法设置。{@link #parseConstructorArgElements(Element, BeanDefinition)}
+			 */
 			parseConstructorArgElements(ele, bd);
 
 			/**
@@ -569,7 +587,9 @@ public class BeanDefinitionParserDelegate {
 			 */
 			parsePropertyElements(ele, bd);
 
-			// 解析 qualifier 属性。
+			/**
+			 * 解析 qualifier 属性。{@link #parseQualifierElements(Element, AbstractBeanDefinition)}
+			 */
 			parseQualifierElements(ele, bd);
 
 			bd.setResource(this.readerContext.getResource());
@@ -599,13 +619,19 @@ public class BeanDefinitionParserDelegate {
 	 * @param beanName bean name
 	 * @param containingBean containing bean definition
 	 * @return a bean definition initialized according to the bean element attributes
+	 *
+	 *  【 解析BeanDefinition的属性 】
 	 */
 	public AbstractBeanDefinition parseBeanDefinitionAttributes(Element ele, String beanName,
 			@Nullable BeanDefinition containingBean, AbstractBeanDefinition bd) {
+		//加载属性值到bean定义中
 
+		// singleton 1.0支持，高版本用scope代替
 		if (ele.hasAttribute(SINGLETON_ATTRIBUTE)) {
 			error("Old 1.x 'singleton' attribute in use - upgrade to 'scope' declaration", ele);
 		}
+
+		// scope
 		else if (ele.hasAttribute(SCOPE_ATTRIBUTE)) {
 			bd.setScope(ele.getAttribute(SCOPE_ATTRIBUTE));
 		}
@@ -614,24 +640,29 @@ public class BeanDefinitionParserDelegate {
 			bd.setScope(containingBean.getScope());
 		}
 
+		// 是否是 “abstract”
 		if (ele.hasAttribute(ABSTRACT_ATTRIBUTE)) {
 			bd.setAbstract(TRUE_VALUE.equals(ele.getAttribute(ABSTRACT_ATTRIBUTE)));
 		}
 
+		// 延迟加载
 		String lazyInit = ele.getAttribute(LAZY_INIT_ATTRIBUTE);
 		if (isDefaultValue(lazyInit)) {
 			lazyInit = this.defaults.getLazyInit();
 		}
 		bd.setLazyInit(TRUE_VALUE.equals(lazyInit));
 
+		// autowire
 		String autowire = ele.getAttribute(AUTOWIRE_ATTRIBUTE);
 		bd.setAutowireMode(getAutowireMode(autowire));
 
+		// depends-on 依赖的bean会先加载，可以是多个用,分开
 		if (ele.hasAttribute(DEPENDS_ON_ATTRIBUTE)) {
 			String dependsOn = ele.getAttribute(DEPENDS_ON_ATTRIBUTE);
 			bd.setDependsOn(StringUtils.tokenizeToStringArray(dependsOn, MULTI_VALUE_ATTRIBUTE_DELIMITERS));
 		}
 
+		//  autowire-candidate
 		String autowireCandidate = ele.getAttribute(AUTOWIRE_CANDIDATE_ATTRIBUTE);
 		if (isDefaultValue(autowireCandidate)) {
 			String candidatePattern = this.defaults.getAutowireCandidates();
@@ -644,19 +675,24 @@ public class BeanDefinitionParserDelegate {
 			bd.setAutowireCandidate(TRUE_VALUE.equals(autowireCandidate));
 		}
 
+		// primary 如果有两个名称一致的bean，以这个为主
 		if (ele.hasAttribute(PRIMARY_ATTRIBUTE)) {
 			bd.setPrimary(TRUE_VALUE.equals(ele.getAttribute(PRIMARY_ATTRIBUTE)));
 		}
 
+		// init-method
 		if (ele.hasAttribute(INIT_METHOD_ATTRIBUTE)) {
 			String initMethodName = ele.getAttribute(INIT_METHOD_ATTRIBUTE);
 			bd.setInitMethodName(initMethodName);
 		}
 		else if (this.defaults.getInitMethod() != null) {
+
+			// 如果beans标签指定了init方法，以这个为主
 			bd.setInitMethodName(this.defaults.getInitMethod());
 			bd.setEnforceInitMethod(false);
 		}
 
+		// destroy-method 如果beans标签制定了，以这个为主
 		if (ele.hasAttribute(DESTROY_METHOD_ATTRIBUTE)) {
 			String destroyMethodName = ele.getAttribute(DESTROY_METHOD_ATTRIBUTE);
 			bd.setDestroyMethodName(destroyMethodName);
@@ -666,9 +702,12 @@ public class BeanDefinitionParserDelegate {
 			bd.setEnforceDestroyMethod(false);
 		}
 
+		// factory-method
 		if (ele.hasAttribute(FACTORY_METHOD_ATTRIBUTE)) {
 			bd.setFactoryMethodName(ele.getAttribute(FACTORY_METHOD_ATTRIBUTE));
 		}
+
+		// factory-bean
 		if (ele.hasAttribute(FACTORY_BEAN_ATTRIBUTE)) {
 			bd.setFactoryBeanName(ele.getAttribute(FACTORY_BEAN_ATTRIBUTE));
 		}
@@ -686,6 +725,7 @@ public class BeanDefinitionParserDelegate {
 	protected AbstractBeanDefinition createBeanDefinition(@Nullable String className, @Nullable String parentName)
 			throws ClassNotFoundException {
 
+		// 指定类加载器会立即加载。
 		return BeanDefinitionReaderUtils.createBeanDefinition(
 				parentName, className, this.readerContext.getBeanClassLoader());
 	}
@@ -737,12 +777,18 @@ public class BeanDefinitionParserDelegate {
 
 	/**
 	 * Parse constructor-arg sub-elements of the given bean element.
+	 *
+	 *  解析构造参数的BeanDefinition的参数
 	 */
 	public void parseConstructorArgElements(Element beanEle, BeanDefinition bd) {
 		NodeList nl = beanEle.getChildNodes();
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node node = nl.item(i);
+
+			// constructor-arg
 			if (isCandidateElement(node) && nodeNameEquals(node, CONSTRUCTOR_ARG_ELEMENT)) {
+
+				// 【 parseConstructorArgElement 】
 				parseConstructorArgElement((Element) node, bd);
 			}
 		}
@@ -776,6 +822,8 @@ public class BeanDefinitionParserDelegate {
 		NodeList nl = beanEle.getChildNodes();
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node node = nl.item(i);
+
+			// 找到qualifier节点
 			if (isCandidateElement(node) && nodeNameEquals(node, QUALIFIER_ELEMENT)) {
 				parseQualifierElement((Element) node, bd);
 			}
@@ -802,14 +850,20 @@ public class BeanDefinitionParserDelegate {
 
 	/**
 	 * Parse replaced-method sub-elements of the given bean element.
+	 *
+	 *  解析replace相关的属性
 	 */
 	public void parseReplacedMethodSubElements(Element beanEle, MethodOverrides overrides) {
 		NodeList nl = beanEle.getChildNodes();
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node node = nl.item(i);
+
+			// replaced-method
 			if (isCandidateElement(node) && nodeNameEquals(node, REPLACED_METHOD_ELEMENT)) {
 				Element replacedMethodEle = (Element) node;
 				String name = replacedMethodEle.getAttribute(NAME_ATTRIBUTE);
+
+				// replacer属性
 				String callback = replacedMethodEle.getAttribute(REPLACER_ATTRIBUTE);
 				ReplaceOverride replaceOverride = new ReplaceOverride(name, callback);
 				// Look for arg-type match elements.
@@ -831,8 +885,14 @@ public class BeanDefinitionParserDelegate {
 	 * Parse a constructor-arg element.
 	 */
 	public void parseConstructorArgElement(Element ele, BeanDefinition bd) {
+
+		// index 属性
 		String indexAttr = ele.getAttribute(INDEX_ATTRIBUTE);
+
+		// type 属性
 		String typeAttr = ele.getAttribute(TYPE_ATTRIBUTE);
+
+		// name 属性
 		String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);
 		if (StringUtils.hasLength(indexAttr)) {
 			try {
