@@ -241,12 +241,13 @@ class DisposableBeanAdapter implements DisposableBean, Runnable, Serializable {
 			for (DestructionAwareBeanPostProcessor processor : this.beanPostProcessors) {
 
 				/**
-				 *  【 postProcessBeforeDestruction 】{@link org.springframework.context.support.ApplicationListenerDetector#postProcessBeforeDestruction
+				 *  【 在bean销毁之前进行一些处理 】{@link org.springframework.context.support.ApplicationListenerDetector#postProcessBeforeDestruction
 				 */
 				processor.postProcessBeforeDestruction(this.bean, this.beanName);
 			}
 		}
 
+		// 如果bean实现了DisposableBean接口
 		if (this.invokeDisposableBean) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Invoking destroy() on bean with name '" + this.beanName + "'");
@@ -254,11 +255,15 @@ class DisposableBeanAdapter implements DisposableBean, Runnable, Serializable {
 			try {
 				if (System.getSecurityManager() != null) {
 					AccessController.doPrivileged((PrivilegedExceptionAction<Object>) () -> {
+
+						// 调用DisposableBean的sestory方法在bean销毁之前可以做一些处理
 						((DisposableBean) this.bean).destroy();
 						return null;
 					}, this.acc);
 				}
 				else {
+
+					// bean实现DisposableBean接口的方式，注解调用子类destroy方法
 					((DisposableBean) this.bean).destroy();
 				}
 			}
@@ -274,6 +279,7 @@ class DisposableBeanAdapter implements DisposableBean, Runnable, Serializable {
 		}
 
 		if (this.destroyMethod != null) {
+			// 执行bean定义中指定的bean销毁方法
 			invokeCustomDestroyMethod(this.destroyMethod);
 		}
 		else if (this.destroyMethodName != null) {

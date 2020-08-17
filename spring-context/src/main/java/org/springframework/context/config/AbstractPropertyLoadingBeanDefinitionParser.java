@@ -41,18 +41,25 @@ abstract class AbstractPropertyLoadingBeanDefinitionParser extends AbstractSingl
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
+		// 获取location属性
 		String location = element.getAttribute("location");
 		if (StringUtils.hasLength(location)) {
+
+			// 得到解析完占位符的路径
 			location = parserContext.getReaderContext().getEnvironment().resolvePlaceholders(location);
+			// 路径可以是多个，按照,分开
 			String[] locations = StringUtils.commaDelimitedListToStringArray(location);
 			builder.addPropertyValue("locations", locations);
 		}
 
+		// properties-ref属性值
 		String propertiesRef = element.getAttribute("properties-ref");
 		if (StringUtils.hasLength(propertiesRef)) {
 			builder.addPropertyReference("properties", propertiesRef);
 		}
 
+		// file-encoding 属性文件编码
 		String fileEncoding = element.getAttribute("file-encoding");
 		if (StringUtils.hasLength(fileEncoding)) {
 			builder.addPropertyValue("fileEncoding", fileEncoding);
@@ -63,9 +70,11 @@ abstract class AbstractPropertyLoadingBeanDefinitionParser extends AbstractSingl
 			builder.addPropertyValue("order", Integer.valueOf(order));
 		}
 
+		// ignore-resource-not-found 没找到属性文件忽略
 		builder.addPropertyValue("ignoreResourceNotFound",
 				Boolean.valueOf(element.getAttribute("ignore-resource-not-found")));
 
+		// 找到相同的属性文件名是否可以覆盖
 		builder.addPropertyValue("localOverride",
 				Boolean.valueOf(element.getAttribute("local-override")));
 

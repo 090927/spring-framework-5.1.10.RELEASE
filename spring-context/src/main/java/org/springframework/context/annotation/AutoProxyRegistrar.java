@@ -53,10 +53,14 @@ public class AutoProxyRegistrar implements ImportBeanDefinitionRegistrar {
 	 * annotation it finds -- as long as it exposes the right {@code mode} and
 	 * {@code proxyTargetClass} attributes, the APC can be registered and configured all
 	 * the same.
+	 *
+	 *  【 创建代理类并注册 】
 	 */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 		boolean candidateFound = false;
+
+		// 获取注解元数据中的属性值
 		Set<String> annTypes = importingClassMetadata.getAnnotationTypes();
 		for (String annType : annTypes) {
 			AnnotationAttributes candidate = AnnotationConfigUtils.attributesFor(importingClassMetadata, annType);
@@ -64,6 +68,8 @@ public class AutoProxyRegistrar implements ImportBeanDefinitionRegistrar {
 				continue;
 			}
 			Object mode = candidate.get("mode");
+
+			// 获取proxyTargetClass属性值
 			Object proxyTargetClass = candidate.get("proxyTargetClass");
 			if (mode != null && proxyTargetClass != null && AdviceMode.class == mode.getClass() &&
 					Boolean.class == proxyTargetClass.getClass()) {
@@ -71,10 +77,15 @@ public class AutoProxyRegistrar implements ImportBeanDefinitionRegistrar {
 				if (mode == AdviceMode.PROXY) {
 
 					/**
+					 * 注册自动代理的 BeanDefinition
 					 * 注册 `InfrastructureAdvisorAutoProxyCreator` Bean {@link AopConfigUtils#registerAutoProxyCreatorIfNecessary(BeanDefinitionRegistry, Object)}
 					 */
 					AopConfigUtils.registerAutoProxyCreatorIfNecessary(registry);
 					if ((Boolean) proxyTargetClass) {
+
+						/**
+						 * 注册cglib自动杆代理的BeanDefinition
+						 */
 						AopConfigUtils.forceAutoProxyCreatorToUseClassProxying(registry);
 						return;
 					}

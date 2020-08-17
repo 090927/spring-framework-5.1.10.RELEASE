@@ -175,9 +175,12 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 				ReflectionUtils.makeAccessible(factoryMethod);
 			}
 
+			// 这里当前执行的工厂方法是用threadLocal保证线程安全的
 			Method priorInvokedFactoryMethod = currentlyInvokedFactoryMethod.get();
 			try {
 				currentlyInvokedFactoryMethod.set(factoryMethod);
+
+				// 执行工厂方法
 				Object result = factoryMethod.invoke(factoryBean, args);
 				if (result == null) {
 					result = new NullBean();
@@ -189,6 +192,8 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 					currentlyInvokedFactoryMethod.set(priorInvokedFactoryMethod);
 				}
 				else {
+
+					// 最后从threadLocal中删除使用的工厂方法以免内存泄漏
 					currentlyInvokedFactoryMethod.remove();
 				}
 			}

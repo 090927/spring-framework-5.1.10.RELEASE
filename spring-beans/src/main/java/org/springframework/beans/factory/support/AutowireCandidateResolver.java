@@ -39,6 +39,8 @@ public interface AutowireCandidateResolver {
 	 * @param descriptor the descriptor for the target method parameter or field
 	 * @return whether the bean definition qualifies as autowire candidate
 	 * @see org.springframework.beans.factory.config.BeanDefinition#isAutowireCandidate()
+	 *
+	 *  【 查询BeanDefinition选项是否自动注入依赖的bean。 】
 	 */
 	default boolean isAutowireCandidate(BeanDefinitionHolder bdHolder, DependencyDescriptor descriptor) {
 		return bdHolder.getBeanDefinition().isAutowireCandidate();
@@ -52,6 +54,8 @@ public interface AutowireCandidateResolver {
 	 * non-required status some other way (e.g. through a parameter annotation)
 	 * @since 5.0
 	 * @see DependencyDescriptor#isRequired()
+	 *
+	 *  【 确定bean是否必须注入。 】
 	 */
 	default boolean isRequired(DependencyDescriptor descriptor) {
 		return descriptor.isRequired();
@@ -78,6 +82,8 @@ public interface AutowireCandidateResolver {
 	 * @return the value suggested (typically an expression String),
 	 * or {@code null} if none found
 	 * @since 3.0
+	 *
+	 * 	【 确定是否给依赖设置默认值，默认是null。 】
 	 */
 	@Nullable
 	default Object getSuggestedValue(DependencyDescriptor descriptor) {
@@ -93,6 +99,8 @@ public interface AutowireCandidateResolver {
 	 * @return the lazy resolution proxy for the actual dependency target,
 	 * or {@code null} if straight resolution is to be performed
 	 * @since 4.0
+	 *
+	 * 	【 如果需要注入，构建一个为依赖对象延迟策略的代理对象，默认是null 】
 	 */
 	@Nullable
 	default Object getLazyResolutionProxyIfNecessary(DependencyDescriptor descriptor, @Nullable String beanName) {

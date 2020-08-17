@@ -146,6 +146,10 @@ public class QualifierAnnotationAutowireCandidateResolver extends GenericTypeAwa
 	public boolean isAutowireCandidate(BeanDefinitionHolder bdHolder, DependencyDescriptor descriptor) {
 		boolean match = super.isAutowireCandidate(bdHolder, descriptor);
 		if (match) {
+
+			/**
+			 *  【 checkQualifiers 】{@link #checkQualifiers(BeanDefinitionHolder, Annotation[])}
+			 */
 			match = checkQualifiers(bdHolder, descriptor.getAnnotations());
 			if (match) {
 				MethodParameter methodParam = descriptor.getMethodParameter();
@@ -162,6 +166,8 @@ public class QualifierAnnotationAutowireCandidateResolver extends GenericTypeAwa
 
 	/**
 	 * Match the given qualifier annotations against the candidate bean definition.
+	 *
+	 *  [ 根据BeanDefinition匹配给定的注解类型。]
 	 */
 	protected boolean checkQualifiers(BeanDefinitionHolder bdHolder, Annotation[] annotationsToSearch) {
 		if (ObjectUtils.isEmpty(annotationsToSearch)) {
@@ -188,7 +194,13 @@ public class QualifierAnnotationAutowireCandidateResolver extends GenericTypeAwa
 						foundMeta = true;
 						// Only accept fallback match if @Qualifier annotation has a value...
 						// Otherwise it is just a marker for a custom qualifier annotation.
+
+						// 否则它只是自定义限定符注释的一个标记。
 						if ((fallbackToMeta && StringUtils.isEmpty(AnnotationUtils.getValue(metaAnn))) ||
+
+								/**
+								 * 【 checkQualifier 】{@link #checkQualifier(BeanDefinitionHolder, Annotation, TypeConverter)}
+								 */
 								!checkQualifier(bdHolder, metaAnn, typeConverter)) {
 							return false;
 						}
@@ -223,10 +235,13 @@ public class QualifierAnnotationAutowireCandidateResolver extends GenericTypeAwa
 		Class<? extends Annotation> type = annotation.annotationType();
 		RootBeanDefinition bd = (RootBeanDefinition) bdHolder.getBeanDefinition();
 
+		// 从BeanDefinition中获取指定注解名称的注解自动注入注解类型
 		AutowireCandidateQualifier qualifier = bd.getQualifier(type.getName());
 		if (qualifier == null) {
 			qualifier = bd.getQualifier(ClassUtils.getShortName(type));
 		}
+
+		// 如果没有获取到自定注入的注解
 		if (qualifier == null) {
 			// First, check annotation on qualified element, if any
 			Annotation targetAnnotation = getQualifiedElementAnnotation(bd, type);
@@ -242,10 +257,14 @@ public class QualifierAnnotationAutowireCandidateResolver extends GenericTypeAwa
 			}
 			if (targetAnnotation == null) {
 				// Look for matching annotation on the target class
+
+				// 获取BeanDefinition被装饰后的beanDefinition
 				if (getBeanFactory() != null) {
 					try {
 						Class<?> beanType = getBeanFactory().getType(bdHolder.getBeanName());
 						if (beanType != null) {
+
+							// 获取装饰的BeanDefinition工厂方法上的自动注入的注解
 							targetAnnotation = AnnotationUtils.getAnnotation(ClassUtils.getUserClass(beanType), type);
 						}
 					}
@@ -254,6 +273,8 @@ public class QualifierAnnotationAutowireCandidateResolver extends GenericTypeAwa
 					}
 				}
 				if (targetAnnotation == null && bd.hasBeanClass()) {
+
+					// 获取cglib子类的父类上的自动注入的注解
 					targetAnnotation = AnnotationUtils.getAnnotation(ClassUtils.getUserClass(bd.getBeanClass()), type);
 				}
 			}
@@ -262,6 +283,7 @@ public class QualifierAnnotationAutowireCandidateResolver extends GenericTypeAwa
 			}
 		}
 
+		// 获取自动注入注解的属性值
 		Map<String, Object> attributes = AnnotationUtils.getAnnotationAttributes(annotation);
 		if (attributes.isEmpty() && qualifier == null) {
 			// If no attributes, the qualifier must be present
