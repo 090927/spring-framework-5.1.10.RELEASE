@@ -297,9 +297,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					logger.debug("Creating shared instance of singleton bean '" + beanName + "'");
 				}
 
-				/*
+				/**
 				 * 将 beanName 添加到 singletonsCurrentlyInCreation 集合中，用于判断当前bean 是否正在创建中。
-				 * 【 用于表明 beanName 对应的 bean 正在创建中 】
+				 * 【 用于表明 beanName 对应的 bean 正在创建中 】{@link #beforeSingletonCreation(String)}
 				 */
 				beforeSingletonCreation(beanName);
 				boolean newSingleton = false;

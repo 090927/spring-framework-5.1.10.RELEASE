@@ -519,9 +519,14 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * have been set. Creates this servlet's WebApplicationContext.
 	 *
 	 * 容器初始化动作
+	 *
+	 * 	重写了 HttpServlet Bean 的初始化模板 initServletBean() 进而初始化 Serlvet 框架
+	 * 		所需的资源，在这里就是 web 应用程序环境
 	 */
 	@Override
 	protected final void initServletBean() throws ServletException {
+
+		// 打印初始化信息到 Servlet 容器的日志中。
 		getServletContext().log("Initializing Spring " + getClass().getSimpleName() + " '" + getServletName() + "'");
 		if (logger.isInfoEnabled()) {
 			logger.info("Initializing Servlet '" + getServletName() + "'");
@@ -533,6 +538,11 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			 * 【 initWebApplicationContext 】 初始化 web 容器 {@link #initWebApplicationContext()}
 			 */
 			this.webApplicationContext = initWebApplicationContext();
+
+			/*
+			 * 同样调用一个模板方法，这个模板方法可以让子类初始化 其指定的资源，这是这个方法在 DispatcherServlet 中并没有被覆盖。
+			 *
+			 */
 			initFrameworkServlet();
 		}
 		catch (ServletException | RuntimeException ex) {
@@ -625,7 +635,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		}
 
 		/**
-		 * 触发 onRefresh, 初始化策略
+		 * 触发 onRefresh, 初始化策略: （可以使 Spring Web MVC 的组件动态地重新加载 ）
 		 * {@link DispatcherServlet#onRefresh(ApplicationContext)}
 		 */
 		if (!this.refreshEventReceived) {
@@ -951,6 +961,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	protected final void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
+		/**
+		 * 简单分发 HTTP GET 请求到 MVC 控制流中。{@link #processRequest(HttpServletRequest, HttpServletResponse)}
+		 */
 		processRequest(request, response);
 	}
 
@@ -1045,13 +1058,23 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			throws ServletException, IOException {
 
 		long startTime = System.currentTimeMillis();
+
+		// 记录产生的异常在 finally 语句中大于处理
 		Throwable failureCause = null;
 
+		/*
+		 * 一个线程可能处理不同请求，这里经常发送 “forward” “include” 操作，所有在处理器之前需要保持一些
+		 * 	容器被覆盖的信息，在请求结束后恢复。
+		 */
 		LocaleContext previousLocaleContext = LocaleContextHolder.getLocaleContext();
+
+		// 获取地域信息的值。
 		LocaleContext localeContext = buildLocaleContext(request);
 
+		// 保持当前的线程局部存储的请求属性，以备在处理完这个请求后恢复。
 		RequestAttributes previousAttributes = RequestContextHolder.getRequestAttributes();
 		ServletRequestAttributes requestAttributes = buildRequestAttributes(request, response, previousAttributes);
+
 
 		WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request);
 		asyncManager.registerCallableInterceptor(FrameworkServlet.class.getName(), new RequestBindingInterceptor());
@@ -1059,9 +1082,15 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		initContextHolders(request, localeContext, requestAttributes);
 
 		try {
+
+			/**
+			 * 开始 Spring WEB MVC 真正的工作流 {@link DispatcherServlet#doService(HttpServletRequest, HttpServletResponse)}
+			 */
 			doService(request, response);
 		}
 		catch (ServletException | IOException ex) {
+
+			// 保持异常对象。
 			failureCause = ex;
 			throw ex;
 		}
@@ -1071,10 +1100,16 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		}
 
 		finally {
+
+			// 在请求处理完后，恢复先前线程局部存储中的地域信息。
 			resetContextHolders(request, previousLocaleContext, previousAttributes);
 			if (requestAttributes != null) {
 				requestAttributes.requestCompleted();
 			}
+
+			/*
+			 * 计算这个请求的总处理时间，将事件传递给应用程序环境，注册事件监听器 bean 就会收到这个事件，可以用于统计分析。
+			 */
 			logResult(request, response, failureCause, asyncManager);
 			publishRequestHandledEvent(request, response, startTime, failureCause);
 		}
@@ -1122,6 +1157,8 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			LocaleContextHolder.setLocaleContext(localeContext, this.threadContextInheritable);
 		}
 		if (requestAttributes != null) {
+
+			// 把新创建的请求属性放入线程的局部存储中。
 			RequestContextHolder.setRequestAttributes(requestAttributes, this.threadContextInheritable);
 		}
 	}

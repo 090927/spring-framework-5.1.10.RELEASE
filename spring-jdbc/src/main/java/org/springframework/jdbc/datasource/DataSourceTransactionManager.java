@@ -245,6 +245,11 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 
 	@Override
 	protected boolean isExistingTransaction(Object transaction) {
+
+		/**
+		 * 判断已存在事务的标志就是存在，ConnectionHolder 并且设置事务活跃标志位 true，所以我们理解为什么在开启新事务发送异常，
+		 * 	要设置活跃标志位 false。防止干扰。
+		 */
 		DataSourceTransactionObject txObject = (DataSourceTransactionObject) transaction;
 		return (txObject.hasConnectionHolder() && txObject.getConnectionHolder().isTransactionActive());
 	}
@@ -264,13 +269,18 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 			// 尝试获取连接，当然并不是每次都获取新的连接，如果当前线程中ConnectionHolder已经存在，则不需要再次获取
 			if (!txObject.hasConnectionHolder() ||
 					txObject.getConnectionHolder().isSynchronizedWithTransaction()) {
+
+				// 从连接池中获取连接
 				Connection newCon = obtainDataSource().getConnection();
 				if (logger.isDebugEnabled()) {
 					logger.debug("Acquired Connection [" + newCon + "] for JDBC transaction");
 				}
+
+				// 放置当前含有 Connection 的 ConnectionHolder 到事务对象中，并且设置链接标志的新的数据库连接。
 				txObject.setConnectionHolder(new ConnectionHolder(newCon), true);
 			}
 
+			// 设置当前事务为同步事务。
 			txObject.getConnectionHolder().setSynchronizedWithTransaction(true);
 			con = txObject.getConnectionHolder().getConnection();
 
@@ -311,6 +321,8 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 		}
 
 		catch (Throwable ex) {
+
+			// 如果当前连接是刚从连接池中获取的，则释放当前连接，并且情况 ConnectionHolder.
 			if (txObject.isNewConnectionHolder()) {
 				DataSourceUtils.releaseConnection(con, obtainDataSource());
 				txObject.setConnectionHolder(null, false);

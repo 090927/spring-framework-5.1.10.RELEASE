@@ -286,6 +286,8 @@ public class DispatcherServlet extends FrameworkServlet {
 		// This is currently strictly internal and not meant to be customized
 		// by application developers.
 		try {
+
+			// 加载：默认配置。
 			ClassPathResource resource = new ClassPathResource(DEFAULT_STRATEGIES_PATH, DispatcherServlet.class);
 			defaultStrategies = PropertiesLoaderUtils.loadProperties(resource);
 		}
@@ -501,15 +503,21 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * <p>May be overridden in subclasses in order to initialize further strategy objects.
 	 */
 	protected void initStrategies(ApplicationContext context) {
-		// 多文件上传
+		/**
+		 * 多文件上传 {@link #initMultipartResolver(ApplicationContext)}
+		 */
 		initMultipartResolver(context);
-		// 本地语言环境
+		/**
+		 * 本地语言环境 {@link #initLocaleResolver(ApplicationContext)}
+		 */
 		initLocaleResolver(context);
 		// 模板处理器
 		initThemeResolver(context);
 		// handlerMapping
 		initHandlerMappings(context);
-		// 参数适配器
+		/**
+		 * 参数适配器 {@link #initHandlerMappings(ApplicationContext)}
+		 */
 		initHandlerAdapters(context);
 		// 异常拦截器
 		initHandlerExceptionResolvers(context);
@@ -528,6 +536,8 @@ public class DispatcherServlet extends FrameworkServlet {
 	 */
 	private void initMultipartResolver(ApplicationContext context) {
 		try {
+
+			// 从配置的Web 应用程序环境中查找多部请求解析器。
 			this.multipartResolver = context.getBean(MULTIPART_RESOLVER_BEAN_NAME, MultipartResolver.class);
 			if (logger.isTraceEnabled()) {
 				logger.trace("Detected " + this.multipartResolver);
@@ -538,6 +548,11 @@ public class DispatcherServlet extends FrameworkServlet {
 		}
 		catch (NoSuchBeanDefinitionException ex) {
 			// Default is no multipart resolver.
+
+			/*
+			 * 如果没有多部请求解析器在 Web 应用程序环境中被注册，则忽略这种情况，毕竟不是所有的
+			 * 	应用程序都需要使用它，多部请求通常被应用到文件上传的情况中。
+			 */
 			this.multipartResolver = null;
 			if (logger.isTraceEnabled()) {
 				logger.trace("No MultipartResolver '" + MULTIPART_RESOLVER_BEAN_NAME + "' declared");
@@ -552,6 +567,8 @@ public class DispatcherServlet extends FrameworkServlet {
 	 */
 	private void initLocaleResolver(ApplicationContext context) {
 		try {
+
+			// 从配置的Web 应用程序环境中查找多部请求解析器。
 			this.localeResolver = context.getBean(LOCALE_RESOLVER_BEAN_NAME, LocaleResolver.class);
 			if (logger.isTraceEnabled()) {
 				logger.trace("Detected " + this.localeResolver);
@@ -562,6 +579,10 @@ public class DispatcherServlet extends FrameworkServlet {
 		}
 		catch (NoSuchBeanDefinitionException ex) {
 			// We need to use the default.
+
+			/*
+			 * 如果在 web 应用程序环境中没有地域请求解析器被注册，则查找默认的配置策略。并且根据配置初始化默认的解析器。
+			 */
 			this.localeResolver = getDefaultStrategy(context, LocaleResolver.class);
 			if (logger.isTraceEnabled()) {
 				logger.trace("No LocaleResolver '" + LOCALE_RESOLVER_BEAN_NAME +
@@ -605,17 +626,27 @@ public class DispatcherServlet extends FrameworkServlet {
 
 		if (this.detectAllHandlerMappings) {
 			// Find all HandlerMappings in the ApplicationContext, including ancestor contexts.
+
+			/*
+			 * 如果配置为自动检测所有的处理器映射，则在加载web 应用程序环境中查找，所有实现处理器映射接口的bean。
+			 */
 			Map<String, HandlerMapping> matchingBeans =
 					BeanFactoryUtils.beansOfTypeIncludingAncestors(context, HandlerMapping.class, true, false);
 			if (!matchingBeans.isEmpty()) {
 				this.handlerMappings = new ArrayList<>(matchingBeans.values());
 				// We keep HandlerMappings in sorted order.
+
+				// 根据这些 bean，所实现 Order 接口进行排序
 				AnnotationAwareOrderComparator.sort(this.handlerMappings);
 			}
 		}
 		else {
 			try {
+
+				// 如果没有配置处理器映射，则在 web 应用程序环境中查找 "handlerMapping" Bean 作为处理器映射。
 				HandlerMapping hm = context.getBean(HANDLER_MAPPING_BEAN_NAME, HandlerMapping.class);
+
+				// 构造单个 bean 的集合。
 				this.handlerMappings = Collections.singletonList(hm);
 			}
 			catch (NoSuchBeanDefinitionException ex) {
@@ -626,6 +657,10 @@ public class DispatcherServlet extends FrameworkServlet {
 		// Ensure we have at least one HandlerMapping, by registering
 		// a default HandlerMapping if no other mappings are found.
 		if (this.handlerMappings == null) {
+
+			/**
+			 * 如果仍有没有注册的处理器映射器。则使用默认策略加载处理器映射。 {@link #getDefaultStrategies(ApplicationContext, Class)}
+			 */
 			this.handlerMappings = getDefaultStrategies(context, HandlerMapping.class);
 			if (logger.isTraceEnabled()) {
 				logger.trace("No HandlerMappings declared for servlet '" + getServletName() +
@@ -868,14 +903,24 @@ public class DispatcherServlet extends FrameworkServlet {
 	 */
 	@SuppressWarnings("unchecked")
 	protected <T> List<T> getDefaultStrategies(ApplicationContext context, Class<T> strategyInterface) {
+
+		// 获取组件接口完整类名，默认策略是通过组件接口的类名作为关键字存储在属性文件里。
 		String key = strategyInterface.getName();
+
+		// 获取以这个接口为关键字配置的所有实现类的名称，名称直接用 逗号分隔。
 		String value = defaultStrategies.getProperty(key);
 		if (value != null) {
+
+			// 把逗号分隔类名字符串转换为字符串数组。
 			String[] classNames = StringUtils.commaDelimitedListToStringArray(value);
 			List<T> strategies = new ArrayList<>(classNames.length);
 			for (String className : classNames) {
 				try {
+
+					// 通过类的名字加载这个类。
 					Class<?> clazz = ClassUtils.forName(className, DispatcherServlet.class.getClassLoader());
+
+					// 在 Web 应用程序环境中创建这个组件的类。
 					Object strategy = createDefaultStrategy(context, clazz);
 					strategies.add((T) strategy);
 				}
@@ -922,12 +967,22 @@ public class DispatcherServlet extends FrameworkServlet {
 
 		// Keep a snapshot of the request attributes in case of an include,
 		// to be able to restore the original attributes after the include.
+
+		/*
+		 * 对于一个 include 请求，除了需要保存和恢复请求信息，还需要保存请求属性、在请求处理完毕后，
+		 * 	如果其中的某个属性发送改变了，则需要恢复该属性。
+		 */
 		Map<String, Object> attributesSnapshot = null;
 		if (WebUtils.isIncludeRequest(request)) {
 			attributesSnapshot = new HashMap<>();
 			Enumeration<?> attrNames = request.getAttributeNames();
 			while (attrNames.hasMoreElements()) {
 				String attrName = (String) attrNames.nextElement();
+
+				/*
+				 * 如果请求清除属性，（cleanupAfterInclude） 开关打开，默认是打开。则保存
+				 *  spring 指定的所有属性，
+				 */
 				if (this.cleanupAfterInclude || attrName.startsWith(DEFAULT_STRATEGIES_PREFIX)) {
 					attributesSnapshot.put(attrName, request.getAttribute(attrName));
 				}
@@ -935,9 +990,15 @@ public class DispatcherServlet extends FrameworkServlet {
 		}
 
 		// Make framework objects available to handlers and view objects.
+
+		// 在 request 属性里存储 web 应用程序环境。
 		request.setAttribute(WEB_APPLICATION_CONTEXT_ATTRIBUTE, getWebApplicationContext());
+
+		// 存储地域解析器
 		request.setAttribute(LOCALE_RESOLVER_ATTRIBUTE, this.localeResolver);
+		// 存储主题解析器
 		request.setAttribute(THEME_RESOLVER_ATTRIBUTE, this.themeResolver);
+		// 存储主题源
 		request.setAttribute(THEME_SOURCE_ATTRIBUTE, getThemeSource());
 
 		if (this.flashMapManager != null) {
@@ -951,7 +1012,7 @@ public class DispatcherServlet extends FrameworkServlet {
 
 		try {
 			/**
-			 * 控制请求转发。
+			 * 【 控制请求转发】{@link #doDispatch(HttpServletRequest, HttpServletResponse)}
 			 */
 			doDispatch(request, response);
 		}
@@ -959,6 +1020,8 @@ public class DispatcherServlet extends FrameworkServlet {
 			if (!WebAsyncUtils.getAsyncManager(request).isConcurrentHandlingStarted()) {
 				// Restore the original attribute snapshot, in case of an include.
 				if (attributesSnapshot != null) {
+
+					// 恢复已保存 Spring 指定的请求属性。
 					restoreAttributesAfterInclude(request, attributesSnapshot);
 				}
 			}
@@ -1024,7 +1087,7 @@ public class DispatcherServlet extends FrameworkServlet {
 			Exception dispatchException = null;
 
 			try {
-				// 1、检查是否是文件上传的请求。
+				// 1、检查是否是文件上传的请求。如果是 HTTP 多部请求，则将其转换并且封装成一个简单 HTTP 请求。
 				processedRequest = checkMultipart(request);
 				multipartRequestParsed = (processedRequest != request);
 
@@ -1058,7 +1121,9 @@ public class DispatcherServlet extends FrameworkServlet {
 					}
 				}
 
-				// 执行拦截器 preHandle 方法
+				/*
+				 * 执行拦截器 preHandle 方法，依次调用前置拦截器。如果有任意拦截器返回 false，则结束整个流程。
+				 */
 				if (!mappedHandler.applyPreHandle(processedRequest, response)) {
 					return;
 				}

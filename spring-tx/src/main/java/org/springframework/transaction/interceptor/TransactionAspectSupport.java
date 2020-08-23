@@ -296,7 +296,9 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		// 构造方法唯一标识(service.UserServiceImpl.save)
 		final String joinpointIdentification = methodIdentification(method, targetClass, txAttr);
 
-		// 声明式事务处理
+		/**
+		 * 【 声明式事务处理 】
+		 */
 		if (txAttr == null || !(tm instanceof CallbackPreferringPlatformTransactionManager)) {
 			// Standard transaction demarcation with getTransaction and commit/rollback calls.
 
@@ -337,7 +339,9 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			return retVal;
 		}
 
-		// 编程式事务处理
+		/**
+		 * 【 编程式事务处理 】
+		 */
 		else {
 			final ThrowableHolder throwableHolder = new ThrowableHolder();
 
@@ -346,6 +350,10 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				Object result = ((CallbackPreferringPlatformTransactionManager) tm).execute(txAttr, status -> {
 					TransactionInfo txInfo = prepareTransactionInfo(tm, txAttr, joinpointIdentification, status);
 					try {
+
+						/**
+						 * 【 方法调用 】
+						 */
 						return invocation.proceedWithInvocation();
 					}
 					catch (Throwable ex) {
@@ -365,6 +373,8 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 						}
 					}
 					finally {
+
+						// 【 清除信息 】
 						cleanupTransactionInfo(txInfo);
 					}
 				});

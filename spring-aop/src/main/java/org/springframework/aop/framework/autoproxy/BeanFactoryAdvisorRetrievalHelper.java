@@ -97,6 +97,11 @@ public class BeanFactoryAdvisorRetrievalHelper {
 
 		// 遍历 advisorNames
 		for (String name : advisorNames) {
+
+			/**
+			 * 【 核心】选择合适的 Advisor 然后添加到集合中，是一个扩展方法。
+			 * 	 为各子类实现灵活方案。
+			 */
 			if (isEligibleBean(name)) {
 
 				// 忽略正在创建中的 advisor bean

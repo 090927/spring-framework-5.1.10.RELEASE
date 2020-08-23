@@ -1359,7 +1359,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				}
 			}
 		}
+
+		// 如果已经解析过构造方法。
 		if (resolved) {
+
+			// 如果需要自动注入，使用构造方法进行注入。
 			if (autowireNecessary) {
 				/**
 				 * 通过“构造方法自动注入”的方式构造 bean 对象 {@link #autowireConstructor(String, RootBeanDefinition, Constructor[], Object[])}

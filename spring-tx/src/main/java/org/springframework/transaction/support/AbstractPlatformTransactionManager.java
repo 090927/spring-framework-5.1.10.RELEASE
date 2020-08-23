@@ -341,6 +341,8 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 	 */
 	@Override
 	public final TransactionStatus getTransaction(@Nullable TransactionDefinition definition) throws TransactionException {
+
+		// 获取 DataSourceTransactionObject 其中包含 ConnectionHolder (包含 Connection)
 		Object transaction = doGetTransaction();
 
 		// Cache debug flag to avoid repeated checks.
@@ -348,14 +350,21 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 
 		if (definition == null) {
 			// Use defaults if no transaction definition given.
+
+			// 如果没有获取事务描述信息 	Bean,就创建一个新对象
 			definition = new DefaultTransactionDefinition();
 		}
 
-		// 判断当前线程是否存在事务，判断依据为当前线程记录的连接不为空且连接中(connectionHolder)中的transactionActive属性不为空
+		/**
+		 * 判断当前线程是否存在事务，判断依据为当前线程记录的连接不为空且连接中(connectionHolder)中的transactionActive属性不为空
+		 *  {@link org.springframework.jdbc.datasource.DataSourceTransactionManager#isExistingTransaction(Object)}
+		 */
 		if (isExistingTransaction(transaction)) {
 			// Existing transaction found -> check propagation behavior to find out how to behave.
 
-			// 当前线程已经存在事务
+			/**
+			 * 当前线程已经存在事务 {@link #handleExistingTransaction(TransactionDefinition, Object, boolean)}
+			 */
 			return handleExistingTransaction(definition, transaction, debugEnabled);
 		}
 
@@ -373,6 +382,8 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			throw new IllegalTransactionStateException(
 					"No existing transaction found for transaction marked with propagation 'mandatory'");
 		}
+
+		// 如果配置的传播级别为：需要当前已存在事务、需要创建一个新的事务、需要一个嵌套事务，则不用挂起当前事务。
 		else if (definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_REQUIRED ||
 				definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_REQUIRES_NEW ||
 				definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_NESTED) {
@@ -383,7 +394,11 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				logger.debug("Creating new transaction with name [" + definition.getName() + "]: " + definition);
 			}
 			try {
+
+				// 如果事务同步级别设置为 从不同步，则默认为一直同步。
 				boolean newSynchronization = (getTransactionSynchronization() != SYNCHRONIZATION_NEVER);
+
+				// 因为当前没有事务，所以以上事务传播级别都需要事务，这只新事务的标志位：true。
 				DefaultTransactionStatus status = newTransactionStatus(
 						definition, transaction, true, newSynchronization, debugEnabled, suspendedResources);
 
@@ -391,7 +406,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				 * 构建transaction ，包括设置ConnectionHolder、隔离级别、timout
 				 * 如果是新连接，绑定到当前线程，这个函数已经开始尝试了对数据库连接的获取
 				 *
-				 * 构建事务 {@link org.springframework.jdbc.datasource.DataSourceTransactionManager#doBegin(Object, TransactionDefinition)}
+				 * 【 开始创建新事务 】 {@link org.springframework.jdbc.datasource.DataSourceTransactionManager#doBegin(Object, TransactionDefinition)}
 				 */
 				doBegin(transaction, definition);
 
@@ -400,6 +415,12 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				return status;
 			}
 			catch (RuntimeException | Error ex) {
+
+				/**
+				 * 异常情况：
+				 * 	恢复事务在 SuspendedResourcesHolder suspendedResources = suspend(null);
+				 * 	 时的状态值，关闭事务的活跃属性等，防止影响其他事务的处理。
+				 */
 				resume(null, suspendedResources);
 				throw ex;
 			}
@@ -411,22 +432,28 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 						"isolation level will effectively be ignored: " + definition);
 			}
 			boolean newSynchronization = (getTransactionSynchronization() == SYNCHRONIZATION_ALWAYS);
+
+			// 设置没有事务时的状态值。
 			return prepareTransactionStatus(definition, null, true, newSynchronization, debugEnabled, null);
 		}
 	}
 
 	/**
 	 * Create a TransactionStatus for an existing transaction.
+	 *
+	 *  在存在事务时是怎么处理的。
 	 */
 	private TransactionStatus handleExistingTransaction(
 			TransactionDefinition definition, Object transaction, boolean debugEnabled)
 			throws TransactionException {
 
+		// 如果当前方法的事务属性被设置为从不支持事务，并且已经有事务，则抛出异常。
 		if (definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_NEVER) {
 			throw new IllegalTransactionStateException(
 					"Existing transaction found for transaction marked with propagation 'never'");
 		}
 
+		// 如果设置事务属性为不支持事务，则挂起当前事务。
 		if (definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_NOT_SUPPORTED) {
 			if (debugEnabled) {
 				logger.debug("Suspending current transaction");
@@ -457,7 +484,11 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			}
 		}
 
+		// 如果是嵌套事务。
 		if (definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_NESTED) {
+
+			// 如果嵌套事务不被当前事务管理器允许，则抛出异常，各个事务管理器可以设置是否支持嵌套事务，
+			// DateSourceTransactionManager, JtaTransactionManager 管理器，默认支持嵌套事务。
 			if (!isNestedTransactionAllowed()) {
 				throw new NestedTransactionNotSupportedException(
 						"Transaction manager does not allow nested transactions by default - " +
@@ -466,10 +497,14 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			if (debugEnabled) {
 				logger.debug("Creating nested transaction with name [" + definition.getName() + "]");
 			}
+
+			// 当前事务管理器在嵌套事务时，是否支持设置保存点。
 			if (useSavepointForNestedTransaction()) {
 				// Create savepoint within existing Spring-managed transaction,
 				// through the SavepointManager API implemented by TransactionStatus.
 				// Usually uses JDBC 3.0 savepoints. Never activates Spring synchronization.
+
+				// 在当前事务中创建保存点。
 				DefaultTransactionStatus status =
 						prepareTransactionStatus(definition, transaction, false, false, debugEnabled, null);
 				status.createAndHoldSavepoint();
@@ -479,6 +514,8 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				// Nested transaction through nested begin and commit/rollback calls.
 				// Usually only for JTA: Spring synchronization might get activated here
 				// in case of a pre-existing JTA transaction.
+
+				// 如果不需要设置保存点，则和开启新事务的逻辑一致。
 				boolean newSynchronization = (getTransactionSynchronization() != SYNCHRONIZATION_NEVER);
 				DefaultTransactionStatus status = newTransactionStatus(
 						definition, transaction, true, newSynchronization, debugEnabled, null);

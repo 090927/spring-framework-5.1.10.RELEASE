@@ -19,6 +19,8 @@ package org.springframework.aop.config;
 import org.springframework.aop.aspectj.AspectJExpressionPointcut;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
+import org.springframework.beans.factory.xml.ParserContext;
+import org.w3c.dom.Element;
 
 /**
  * {@code NamespaceHandler} for the {@code aop} namespace.
@@ -64,7 +66,7 @@ public class AopNamespaceHandler extends NamespaceHandlerSupport {
 		// In 2.0 XSD as well as in 2.1 XSD.
 
 		/**
-		 * <aop:config/> 标签解析类 {@link ConfigBeanDefinitionParser}
+		 * <aop:config/> 标签解析类 {@link ConfigBeanDefinitionParser#parse(Element, ParserContext)}
 		 */
 		registerBeanDefinitionParser("config", new ConfigBeanDefinitionParser());
 

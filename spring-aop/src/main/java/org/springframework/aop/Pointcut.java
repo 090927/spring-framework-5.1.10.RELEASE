@@ -29,6 +29,8 @@ package org.springframework.aop;
  * @see org.springframework.aop.support.Pointcuts
  * @see org.springframework.aop.support.ClassFilters
  * @see org.springframework.aop.support.MethodMatchers
+ *
+ *  聚合，类和方法匹配职责。
  */
 public interface Pointcut {
 

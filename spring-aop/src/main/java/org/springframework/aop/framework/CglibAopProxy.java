@@ -162,11 +162,16 @@ class CglibAopProxy implements AopProxy, Serializable {
 		}
 
 		try {
+			// 获取 advised 目标类
 			Class<?> rootClass = this.advised.getTargetClass();
 			Assert.state(rootClass != null, "Target class must be available for creating a CGLIB proxy");
 
 			Class<?> proxySuperClass = rootClass;
 			if (ClassUtils.isCglibProxyClass(rootClass)) {
+
+				/**
+				 * 如果这代理类是 CGLIB 生成的，则获取其父类，并且把当前类添加到 advised 配置信息中。
+				 */
 				proxySuperClass = rootClass.getSuperclass();
 				Class<?>[] additionalInterfaces = rootClass.getInterfaces();
 				for (Class<?> additionalInterface : additionalInterfaces) {
@@ -175,22 +180,30 @@ class CglibAopProxy implements AopProxy, Serializable {
 			}
 
 			// Validate the class, writing log messages as necessary.
+			// 验证父类
 			validateClassIfNecessary(proxySuperClass, classLoader);
 
 			// Configure CGLIB Enhancer...
 			Enhancer enhancer = createEnhancer();
 			if (classLoader != null) {
+				// 设置当前类加载器
 				enhancer.setClassLoader(classLoader);
 				if (classLoader instanceof SmartClassLoader &&
 						((SmartClassLoader) classLoader).isClassReloadable(proxySuperClass)) {
+
+					// 设置不用缓存。
 					enhancer.setUseCache(false);
 				}
 			}
+
 			enhancer.setSuperclass(proxySuperClass);
+
+			// 获取 Advised 配置信息中需要被代理的接口，并且将这些接口设置到新的 CGLIB 代理实例中。
 			enhancer.setInterfaces(AopProxyUtils.completeProxiedInterfaces(this.advised));
 			enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE);
 			enhancer.setStrategy(new ClassLoaderAwareUndeclaredThrowableStrategy(classLoader));
 
+			// 设置 callback 相当于 JDK 动态代理中的 InvocationHandler 中时真正执行拦截处理的回调函数。
 			Callback[] callbacks = getCallbacks(rootClass);
 			Class<?>[] types = new Class<?>[callbacks.length];
 			for (int x = 0; x < types.length; x++) {
@@ -202,6 +215,8 @@ class CglibAopProxy implements AopProxy, Serializable {
 			enhancer.setCallbackTypes(types);
 
 			// Generate the proxy class and create a proxy instance.
+
+			// 使用生产的 enhancer 实例生产代理类 class 并且实例化当前 class 返回当前新实例化的对象。
 			return createProxyClassAndInstance(enhancer, callbacks);
 		}
 		catch (CodeGenerationException | IllegalArgumentException ex) {
@@ -637,6 +652,10 @@ class CglibAopProxy implements AopProxy, Serializable {
 			MethodInvocation invocation = new CglibMethodInvocation(
 					proxy, this.target, method, args, this.targetClass, this.adviceChain, methodProxy);
 			// If we get here, we need to create a MethodInvocation.
+
+			/**
+			 * 【 proceed 】 {@link ReflectiveMethodInvocation#proceed()}
+			 */
 			Object retVal = invocation.proceed();
 			retVal = processReturnType(proxy, this.target, method, retVal);
 			return retVal;

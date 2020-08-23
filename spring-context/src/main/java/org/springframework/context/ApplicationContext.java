@@ -80,6 +80,8 @@ public interface ApplicationContext extends EnvironmentCapable, ListableBeanFact
 	/**
 	 * Return the timestamp when this context was first loaded.
 	 * @return the timestamp (ms) when this context was first loaded
+	 *
+	 *  第一次加载上下文的时间
 	 */
 	long getStartupDate();
 
@@ -87,6 +89,8 @@ public interface ApplicationContext extends EnvironmentCapable, ListableBeanFact
 	 * Return the parent context, or {@code null} if there is no parent
 	 * and this is the root of the context hierarchy.
 	 * @return the parent context, or {@code null} if there is no parent
+	 *
+	 *  返回上一级上下文
 	 */
 	@Nullable
 	ApplicationContext getParent();

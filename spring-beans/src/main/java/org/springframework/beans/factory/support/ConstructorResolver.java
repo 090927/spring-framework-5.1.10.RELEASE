@@ -280,7 +280,7 @@ class ConstructorResolver {
 				if (resolvedValues != null) {
 					try {
 
-						/*
+						/**
 						 * 判断否则方法是否有 ConstructorProperties 注解，若有，则取注解中的
 						 * 值。比如下面的代码：
 						 *

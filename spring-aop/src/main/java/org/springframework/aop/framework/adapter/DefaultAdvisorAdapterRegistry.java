@@ -78,7 +78,7 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 	}
 
 	/**
-	 * 将 advisor 中的 advice 转成相应的拦截器
+	 * 将 advisor 中的 advice 转成相应的拦截器 （在代理实例发送 Invoker 调用）
 	 * @param advisor the Advisor to find an interceptor for
 	 * @return
 	 * @throws UnknownAdviceTypeException
