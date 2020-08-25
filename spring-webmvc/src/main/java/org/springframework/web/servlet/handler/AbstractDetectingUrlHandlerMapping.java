@@ -52,10 +52,18 @@ public abstract class AbstractDetectingUrlHandlerMapping extends AbstractUrlHand
 	/**
 	 * Calls the {@link #detectHandlers()} method in addition to the
 	 * superclass's initialization.
+	 *
+	 *  改写应用程序初始化方法，获得注册处理器的机会
 	 */
 	@Override
 	public void initApplicationContext() throws ApplicationContextException {
+
+		// 保持原来的初始化实现
 		super.initApplicationContext();
+
+		/**
+		 * 从web 应用程序环境中探测处理器 {@link #detectHandlers()}
+		 */
 		detectHandlers();
 	}
 

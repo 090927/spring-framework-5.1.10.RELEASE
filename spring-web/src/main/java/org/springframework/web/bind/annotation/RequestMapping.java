@@ -83,6 +83,8 @@ public @interface RequestMapping {
 	 * with "#" as separator.
 	 * @see org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder
 	 * @see org.springframework.web.servlet.handler.HandlerMethodMappingNamingStrategy
+	 *
+	 *   用于匹配查找路径 URI Pattern HTTP 请求的查找路径必须匹配 URI Pattern 中的一个
 	 */
 	String name() default "";
 
@@ -94,6 +96,8 @@ public @interface RequestMapping {
 	 * <p><b>Supported at the type level as well as at the method level!</b>
 	 * When used at the type level, all method-level mappings inherit
 	 * this primary mapping, narrowing it for a specific handler method.
+	 *
+	 *  处理器方法所支持的 HTTP 方法，这些方法，GET,POST, HEAD, OPTIONS
 	 */
 	@AliasFor("path")
 	String[] value() default {};

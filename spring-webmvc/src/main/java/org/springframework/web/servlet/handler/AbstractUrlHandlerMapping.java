@@ -120,16 +120,26 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 	@Override
 	@Nullable
 	protected Object getHandlerInternal(HttpServletRequest request) throws Exception {
+
+		// 通过实用方法获得查找路径。
 		String lookupPath = getUrlPathHelper().getLookupPathForRequest(request);
+
+		/**
+		 * 最佳匹配处理器 {@link #lookupHandler(String, HttpServletRequest)}
+		 */
 		Object handler = lookupHandler(lookupPath, request);
 		if (handler == null) {
 			// We need to care for the default handler directly, since we need to
 			// expose the PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE for it as well.
 			Object rawHandler = null;
 			if ("/".equals(lookupPath)) {
+
+				// 如果查找路径是跟路径，则使用根处理。
 				rawHandler = getRootHandler();
 			}
 			if (rawHandler == null) {
+
+				// 否则使用默认处理器
 				rawHandler = getDefaultHandler();
 			}
 			if (rawHandler != null) {
@@ -138,7 +148,11 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 					String handlerName = (String) rawHandler;
 					rawHandler = obtainApplicationContext().getBean(handlerName);
 				}
+
+				// 定义模板方法校验处理器
 				validateHandler(rawHandler, request);
+
+				// 增加新的处理器拦截器来导出最佳匹配路径和查找路径，因为我们使用了跟处理器，或者默认的处理器。
 				handler = buildPathExposingHandler(rawHandler, lookupPath, lookupPath, null);
 			}
 		}
@@ -157,24 +171,38 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 	 * @return the associated handler instance, or {@code null} if not found
 	 * @see #exposePathWithinMapping
 	 * @see org.springframework.util.AntPathMatcher
+	 *
+	 *   最佳处理器
 	 */
 	@Nullable
 	protected Object lookupHandler(String urlPath, HttpServletRequest request) throws Exception {
 		// Direct match?
+
+		// 首先执行精确匹配，查找路径和处理器配置URL 完全相同。
 		Object handler = this.handlerMap.get(urlPath);
 		if (handler != null) {
 			// Bean name or resolved handler?
+
+			// 精确匹配成功
 			if (handler instanceof String) {
 				String handlerName = (String) handler;
 				handler = obtainApplicationContext().getBean(handlerName);
 			}
+
+			// 调用模板方法校验处理器
 			validateHandler(handler, request);
+
+			// 增加新的处理器拦截器，导出最佳匹配路径和查找路径，既然精确匹配成功，则两个值都是查找路径。
 			return buildPathExposingHandler(handler, urlPath, urlPath, null);
 		}
 
 		// Pattern match?
+
+		// 执行最佳匹配方案。
 		List<String> matchingPatterns = new ArrayList<>();
 		for (String registeredPattern : this.handlerMap.keySet()) {
+
+			// 对匹配的 URL Pattern 进行排序
 			if (getPathMatcher().match(registeredPattern, urlPath)) {
 				matchingPatterns.add(registeredPattern);
 			}
@@ -188,13 +216,19 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 		String bestMatch = null;
 		Comparator<String> patternComparator = getPathMatcher().getPatternComparator(urlPath);
 		if (!matchingPatterns.isEmpty()) {
+
+			// 对匹配的 URL Pattern 进行排序
 			matchingPatterns.sort(patternComparator);
 			if (logger.isTraceEnabled() && matchingPatterns.size() > 1) {
 				logger.trace("Matching patterns " + matchingPatterns);
 			}
+
+			// 排序后数组的第一个匹配为最佳匹配。
 			bestMatch = matchingPatterns.get(0);
 		}
 		if (bestMatch != null) {
+
+			// 如果存在最佳匹配，则查找最佳匹配 URL Pattern 的处理器。
 			handler = this.handlerMap.get(bestMatch);
 			if (handler == null) {
 				if (bestMatch.endsWith("/")) {
@@ -210,7 +244,17 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 				String handlerName = (String) handler;
 				handler = obtainApplicationContext().getBean(handlerName);
 			}
+
+			// 调用模板方法校验处理器
 			validateHandler(handler, request);
+
+			/*
+			 * 从URL 中提取出 URL Pattern 前缀的剩余部分，例如
+			 *
+			 * /petstore/*, 从而查找路径为 /petstore/insert 则结构是 /insert
+			 *
+			 *
+			 */
 			String pathWithinMapping = getPathMatcher().extractPathWithinPattern(bestMatch, urlPath);
 
 			// There might be multiple 'best patterns', let's make sure we have the correct URI template variables
@@ -226,6 +270,10 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 			if (logger.isTraceEnabled() && uriTemplateVariables.size() > 0) {
 				logger.trace("URI variables " + uriTemplateVariables);
 			}
+
+			/**
+			 * 创建处理器执行链。 {@link #buildPathExposingHandler(Object, String, String, Map)}
+			 */
 			return buildPathExposingHandler(handler, bestMatch, pathWithinMapping, uriTemplateVariables);
 		}
 
@@ -254,11 +302,18 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 	 * @param pathWithinMapping the path to expose before executing the handler
 	 * @param uriTemplateVariables the URI template variables, can be {@code null} if no variables found
 	 * @return the final handler object
+	 *
+	 *  创建处理器执行链
 	 */
 	protected Object buildPathExposingHandler(Object rawHandler, String bestMatchingPattern,
 			String pathWithinMapping, @Nullable Map<String, String> uriTemplateVariables) {
 
+		// 创建出列器执行器链
 		HandlerExecutionChain chain = new HandlerExecutionChain(rawHandler);
+
+		/**
+		 * 添加路径到处理器拦截器
+		 */
 		chain.addInterceptor(new PathExposingHandlerInterceptor(bestMatchingPattern, pathWithinMapping));
 		if (!CollectionUtils.isEmpty(uriTemplateVariables)) {
 			chain.addInterceptor(new UriTemplateVariablesHandlerInterceptor(uriTemplateVariables));
@@ -275,6 +330,7 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 	protected void exposePathWithinMapping(String bestMatchingPattern, String pathWithinMapping,
 			HttpServletRequest request) {
 
+		// 导出请求属性中，在控制器中这些路径可以用于解析默认的视图名。
 		request.setAttribute(BEST_MATCHING_PATTERN_ATTRIBUTE, bestMatchingPattern);
 		request.setAttribute(PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE, pathWithinMapping);
 	}
@@ -286,6 +342,8 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 	 * @see #PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE
 	 */
 	protected void exposeUriTemplateVariables(Map<String, String> uriTemplateVariables, HttpServletRequest request) {
+
+		// 请求属性中，在控制器中这些参数可能成为业务逻辑的输入。
 		request.setAttribute(URI_TEMPLATE_VARIABLES_ATTRIBUTE, uriTemplateVariables);
 	}
 
@@ -411,6 +469,10 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 
 		@Override
 		public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+
+			/**
+			 * 导出是在出列器拦截器的前置拦截器中实现的。 {@link #exposePathWithinMapping(String, String, HttpServletRequest)}
+			 */
 			exposePathWithinMapping(this.bestMatchingPattern, this.pathWithinMapping, request);
 			request.setAttribute(BEST_MATCHING_HANDLER_ATTRIBUTE, handler);
 			request.setAttribute(INTROSPECT_TYPE_LEVEL_MAPPING, supportsTypeLevelMappings());
@@ -434,6 +496,10 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 
 		@Override
 		public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+
+			/**
+			 * 导出请求属性中，在控制器这些参数可能成为业务逻辑的输入 {@link #exposeUriTemplateVariables(Map, HttpServletRequest)}
+			 */
 			exposeUriTemplateVariables(this.uriTemplateVariables, request);
 			return true;
 		}

@@ -166,6 +166,8 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping {
 	 */
 	protected void registerHandler(String[] urlPaths, String beanName) throws BeansException, IllegalStateException {
 		Assert.notNull(urlPaths, "URL path array must not be null");
+
+		// 对于拥有多个 URL 的处理器，分别注册URL 到处理器的映射
 		for (String urlPath : urlPaths) {
 			registerHandler(urlPath, beanName);
 		}
@@ -178,10 +180,14 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping {
 	 * (a bean name will automatically be resolved into the corresponding handler bean)
 	 * @throws BeansException if the handler couldn't be registered
 	 * @throws IllegalStateException if there is a conflicting handler registered
+	 *
+	 *   注册一个 URL 到一个处理器的映射
 	 */
 	protected void registerHandler(String urlPath, Object handler) throws BeansException, IllegalStateException {
 		Assert.notNull(urlPath, "URL path must not be null");
 		Assert.notNull(handler, "Handler object must not be null");
+
+		// 开始解析处理器
 		Object resolvedHandler = handler;
 
 		// Parse path pattern
@@ -197,8 +203,12 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping {
 		}
 
 		// Eagerly resolve handler if referencing singleton via name.
+
+		// 如果没有配置懒惰初始化处理器选项，则把使用的处理器名称转换为 web 应用程序环境中的 bean。
 		if (!this.lazyInitHandlers && handler instanceof String) {
 			String handlerName = (String) handler;
+
+			// 如果不是单例模式，则不能在初始化进行转换。
 			if (obtainApplicationContext().isSingleton(handlerName)) {
 				resolvedHandler = obtainApplicationContext().getBean(handlerName);
 			}

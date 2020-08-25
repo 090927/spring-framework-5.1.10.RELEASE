@@ -196,6 +196,8 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	 * @see org.springframework.web.context.request.WebRequestInterceptor
 	 */
 	public void setInterceptors(Object... interceptors) {
+
+		// 通过注入的方式设置通用拦截器，这些拦截器是通用对象类型，其真正支持的类型包括 HandlerInterceptor,webRequestInterceptor
 		this.interceptors.addAll(Arrays.asList(interceptors));
 	}
 
@@ -290,8 +292,11 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	 */
 	@Override
 	protected void initApplicationContext() throws BeansException {
+		// 提供模板方法，让子类添加新的拦截器
 		extendInterceptors(this.interceptors);
 		detectMappedInterceptors(this.adaptedInterceptors);
+
+		// 初始化拦截器，因为拦截器有不同的实现，所以需要将不同的拦截器适配到最终的 HandlerInterceptor 实现。
 		initInterceptors();
 	}
 
@@ -334,6 +339,10 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 				if (interceptor == null) {
 					throw new IllegalArgumentException("Entry number " + i + " in interceptors array is null");
 				}
+
+				/**
+				 * 对每个拦截器进行适配 {@link #adaptInterceptor(Object)}
+				 */
 				this.adaptedInterceptors.add(adaptInterceptor(interceptor));
 			}
 		}
@@ -353,9 +362,13 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	 */
 	protected HandlerInterceptor adaptInterceptor(Object interceptor) {
 		if (interceptor instanceof HandlerInterceptor) {
+
+			// 如果拦截器是 HandlerInterceptor 本身实现，则不需要适配
 			return (HandlerInterceptor) interceptor;
 		}
 		else if (interceptor instanceof WebRequestInterceptor) {
+
+			// 如果拦截器是 webRequestHandlerInterceptorAdapter 则适配到通用的 HandlerInterceptor 实现。
 			return new WebRequestHandlerInterceptorAdapter((WebRequestInterceptor) interceptor);
 		}
 		else {
@@ -395,23 +408,40 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	 * @param request current HTTP request
 	 * @return the corresponding handler instance, or the default handler
 	 * @see #getHandlerInternal
+	 *
+	 * 	实现处理映射的方法，这个是 DispatcherServlet 请求到处理器执行链的入口
 	 */
 	@Override
 	@Nullable
 	public final HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+
+		/**
+		 * 使用某种映射逻辑，将请求映射到一个真正的处理器。{@link AbstractUrlHandlerMapping#getHandlerInternal(HttpServletRequest)}
+		 */
 		Object handler = getHandlerInternal(request);
+
+		// 如果没有映射的处理器，则使用默认的处理器。
 		if (handler == null) {
+
+			// 子类可以设置默认的处理器，也可以通过注入的方式设置默认的处理器。
 			handler = getDefaultHandler();
 		}
+
+		// 如果没有发现任何处理器，则返回空处理器。Dispatcher 将发送 HTTP 错误响应 404.
 		if (handler == null) {
 			return null;
 		}
 		// Bean name or resolved handler?
 		if (handler instanceof String) {
 			String handlerName = (String) handler;
+
+			// 在应用程序环境中通过 bean 名称查找这个 bean。
 			handler = obtainApplicationContext().getBean(handlerName);
 		}
 
+		/**
+		 * 连同处理器拦截器构造处理器执行链。{@link #getHandlerExecutionChain(Object, HttpServletRequest)}
+		 */
 		HandlerExecutionChain executionChain = getHandlerExecutionChain(handler, request);
 
 		if (logger.isTraceEnabled()) {
@@ -476,9 +506,13 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 
 		String lookupPath = this.urlPathHelper.getLookupPathForRequest(request);
 		for (HandlerInterceptor interceptor : this.adaptedInterceptors) {
+
+			// 判断处理器的类型
 			if (interceptor instanceof MappedInterceptor) {
 				MappedInterceptor mappedInterceptor = (MappedInterceptor) interceptor;
 				if (mappedInterceptor.matches(lookupPath, this.pathMatcher)) {
+
+					// 添加初始化拦截器
 					chain.addInterceptor(mappedInterceptor.getInterceptor());
 				}
 			}

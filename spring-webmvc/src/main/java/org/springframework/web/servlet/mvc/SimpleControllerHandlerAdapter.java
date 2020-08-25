@@ -49,6 +49,7 @@ public class SimpleControllerHandlerAdapter implements HandlerAdapter {
 	public ModelAndView handle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
 
+		// 适配 HTTP 请求和 HTTP 响应到处理器，一定时控制器接口的实现。并且返回模型和视图，dispatcherServlet 将用模型和视图构造 http 响应。
 		return ((Controller) handler).handleRequest(request, response);
 	}
 
