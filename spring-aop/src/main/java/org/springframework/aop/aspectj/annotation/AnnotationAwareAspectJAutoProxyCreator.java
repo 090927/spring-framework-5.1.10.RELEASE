@@ -88,7 +88,7 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
 
 
 	/**
-	 * 查询所有通知器
+	 *  【 获取增强器（通知） 】
 	 *
 	 * 1、从容器中查找所有类型为 Advisor 的 bean 对应的名称
 	 * 2、遍历 advisorNames，并从容器中获取对应的 bean

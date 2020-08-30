@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -234,7 +235,9 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 					else {
 
 						/**
-						 * 如果没有使用 Spring 默认的 XML 命名空间，则使用用户自定义的解析规则解析元素节点。{@link BeanDefinitionParserDelegate#parseCustomElement(Element)}
+						 *  <tx: annotation-driven/> 自定义的解析策略。
+						 *
+						 * 如果没有使用 Spring 默认的 XML 命名空间，则使用用户自定义的解析规则解析元素节点。{@link BeanDefinitionParserDelegate#parseCustomElement(Element, BeanDefinition)}
 						 */
 						delegate.parseCustomElement(ele);
 					}
@@ -279,6 +282,10 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		else if (delegate.nodeNameEquals(ele, BEAN_ELEMENT)) {
 			processBeanDefinition(ele, delegate);
 		}
+
+		/**
+		 * 解析 <beans></beans>
+		 */
 		else if (delegate.nodeNameEquals(ele, NESTED_BEANS_ELEMENT)) {
 			// recurse
 			doRegisterBeanDefinitions(ele);
@@ -416,6 +423,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	protected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) {
 		/**
 		 *  1、BeanDefinitionHolder 对 BeanDefinition 封装，即Bean 定义的封装类。
+		 *  2、BeanDefinitionHolder 包含我们配置文件中各种属性，例如：class、method、id 之类的属性。
 		 *
 		 *  解析为 `BeanDefinitionHolder` {@link BeanDefinitionParserDelegate#parseBeanDefinitionElement(Element)}
 		 */
@@ -437,7 +445,9 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 						bdHolder.getBeanName() + "'", ele, ex);
 			}
 			// Send registration event.
-			// 解析得到 Bean 定义之后，发送注册事件。
+			/**
+			 * 解析得到 Bean 定义之后，发送注册事件【 扩展方式 】Spring 中并没有对此事件进行处理。
+			 */
 			getReaderContext().fireComponentRegistered(new BeanComponentDefinition(bdHolder));
 		}
 	}

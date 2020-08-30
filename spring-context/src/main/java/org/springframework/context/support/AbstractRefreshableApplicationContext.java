@@ -243,6 +243,8 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 * @see DefaultListableBeanFactory#setAllowEagerClassLoading
 	 */
 	protected void customizeBeanFactory(DefaultListableBeanFactory beanFactory) {
+
+		// 如果 `allowBeanDefinitionOverriding` 不为空，则设置 beanFactory 响应的属性。
 		if (this.allowBeanDefinitionOverriding != null) {
 
 			// 是否允许 Bean 定义覆盖

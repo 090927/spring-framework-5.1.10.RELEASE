@@ -124,16 +124,20 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 		 * 获取所有 handler {@link #getHandlerMappings()}
 		 */
 		Map<String, Object> handlerMappings = getHandlerMappings();
+
+		// 根据命名空间找到对应信息。
 		Object handlerOrClassName = handlerMappings.get(namespaceUri);
 		if (handlerOrClassName == null) {
 			return null;
 		}
 		else if (handlerOrClassName instanceof NamespaceHandler) {
+			// 做过解析，直接从缓存中读取。
 			return (NamespaceHandler) handlerOrClassName;
 		}
 		else {
 			String className = (String) handlerOrClassName;
 			try {
+				// 使用反射，将类路径转化为类。
 				Class<?> handlerClass = ClassUtils.forName(className, this.classLoader);
 
 				// handler 必须是这个类型 NamespaceHandler
@@ -184,7 +188,7 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 
 						/*
 						 * DEFAULT_HANDLER_MAPPINGS_LOCATION
-						 *   在 META-INF/spring.handlers配置文件中有配置对应关系
+						 *   在 META-INF/spring.handlers 配置文件中有配置对应关系
 						 */
 						Properties mappings =
 								PropertiesLoaderUtils.loadAllProperties(this.handlerMappingsLocation, this.classLoader);

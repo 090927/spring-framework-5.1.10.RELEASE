@@ -584,7 +584,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Allows post-processing of the bean factory in context subclasses.
 
 				/**
-				 * 4、
+				 * 4、【 子类可扩展 】
 				 *
 				 * 为容器的某些子类指定特殊POST 事件处理。
 				 */
@@ -632,7 +632,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Initialize other special beans in specific context subclasses.
 
 				/**
-				 * 9、
+				 * 9、【 子类可扩展 】
 				 *
 				 * 调用子类某些特殊Bean 的初始化方法
 				 */
@@ -780,6 +780,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 		// Tell the internal bean factory to use the context's class loader etc.
 		beanFactory.setBeanClassLoader(getClassLoader());
+
+		/**
+		 * SpEL 支持。
+		 */
 		beanFactory.setBeanExpressionResolver(new StandardBeanExpressionResolver(beanFactory.getBeanClassLoader()));
 		beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
 

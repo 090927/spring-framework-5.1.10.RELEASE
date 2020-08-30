@@ -134,11 +134,14 @@ public class EncodedResource implements InputStreamSource {
 	 * @throws IOException if opening the Reader failed
 	 * @see #requiresReader()
 	 * @see #getInputStream()
+	 *
+	 *  【核心方法】对资源文件编码处理。
 	 */
 	public Reader getReader() throws IOException {
 		if (this.charset != null) {
 			return new InputStreamReader(this.resource.getInputStream(), this.charset);
 		}
+		// 编码处理。
 		else if (this.encoding != null) {
 			return new InputStreamReader(this.resource.getInputStream(), this.encoding);
 		}

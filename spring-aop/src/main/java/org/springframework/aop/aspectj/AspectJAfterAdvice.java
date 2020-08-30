@@ -50,7 +50,7 @@ public class AspectJAfterAdvice extends AbstractAspectJAdvice
 		}
 		finally {
 
-			// 调用后置通知逻辑
+			// 激活增强方法。
 			invokeAdviceMethod(getJoinPointMatch(), null, null);
 		}
 	}

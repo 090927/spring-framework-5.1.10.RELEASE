@@ -115,6 +115,10 @@ public abstract class AopConfigUtils {
 		}
 	}
 
+	/**
+	 * 强制使用的过程，其实也是一个属性的设置过程。
+	 * @param registry
+	 */
 	public static void forceAutoProxyCreatorToExposeProxy(BeanDefinitionRegistry registry) {
 		if (registry.containsBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME)) {
 			BeanDefinition definition = registry.getBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME);
@@ -122,7 +126,10 @@ public abstract class AopConfigUtils {
 		}
 	}
 
-
+	/**
+	 * 注册过程 `AnnotationAwareAspectJAutoProxyCreator`
+	 * @return
+	 */
 	@Nullable
 	private static BeanDefinition registerOrEscalateApcAsRequired(
 			Class<?> cls, BeanDefinitionRegistry registry, @Nullable Object source) {
@@ -135,6 +142,8 @@ public abstract class AopConfigUtils {
 			if (!cls.getName().equals(apcDefinition.getBeanClassName())) {
 				int currentPriority = findPriorityForClass(apcDefinition.getBeanClassName());
 				int requiredPriority = findPriorityForClass(cls);
+
+				// 比较优先级。
 				if (currentPriority < requiredPriority) {
 
 					// 改变bean最重要的就是改变bean所对应的className属性

@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.aopalliance.aop.Advice;
+import org.aopalliance.intercept.MethodInvocation;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -286,6 +287,8 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 			MetadataAwareAspectInstanceFactory aspectInstanceFactory, int declarationOrder, String aspectName) {
 
 		Class<?> candidateAspectClass = aspectInstanceFactory.getAspectMetadata().getAspectClass();
+
+		// 验证
 		validate(candidateAspectClass);
 
 		// 获取 Advice 注解
@@ -322,10 +325,18 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 						candidateAdviceMethod, expressionPointcut, aspectInstanceFactory);
 				break;
 			case AtBefore:
+
+				/**
+				 * 【 AspectJMethodBeforeAdvice 】 {@link AspectJMethodBeforeAdvice#before(Method, Object[], Object)}
+				 */
 				springAdvice = new AspectJMethodBeforeAdvice(
 						candidateAdviceMethod, expressionPointcut, aspectInstanceFactory);
 				break;
 			case AtAfter:
+
+				/**
+				 * 【 AspectJAfterAdvice 】 {@link AspectJAfterAdvice#invoke(MethodInvocation)}
+				 */
 				springAdvice = new AspectJAfterAdvice(
 						candidateAdviceMethod, expressionPointcut, aspectInstanceFactory);
 				break;

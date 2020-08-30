@@ -323,6 +323,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 			logger.trace("Loading XML bean definitions from " + encodedResource);
 		}
 
+		// 通过属性来记录加载的资源。
 		Set<EncodedResource> currentResources = this.resourcesCurrentlyBeingLoaded.get();
 		if (currentResources == null) {
 			currentResources = new HashSet<>(4);
@@ -406,6 +407,9 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 			/**
 			 *
 			 *  将 XML 文件转换为 DOM。解析过程{@link #doLoadDocument(InputSource, Resource)}
+			 *  主要功能：
+			 *  	1、获取对 XML 文件的验证模式。
+			 *  	2、加载 XML 文件，并得到对应 Document
 			 */
 			Document doc = doLoadDocument(inputSource, resource);
 
@@ -475,9 +479,15 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 */
 	protected int getValidationModeForResource(Resource resource) {
 		int validationModeToUse = getValidationMode();
+
+		// 如果手动指定验证模式。
 		if (validationModeToUse != VALIDATION_AUTO) {
 			return validationModeToUse;
 		}
+
+		/**
+		 * 如果未指定，则使用自动检测 {@link #detectValidationMode(Resource)}
+		 */
 		int detectedMode = detectValidationMode(resource);
 		if (detectedMode != VALIDATION_AUTO) {
 			return detectedMode;
@@ -516,6 +526,10 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		}
 
 		try {
+
+			/**
+			 * [ detectValidationMode ] {@link XmlValidationModeDetector#detectValidationMode(InputStream)} 
+			 */
 			return this.validationModeDetector.detectValidationMode(inputStream);
 		}
 		catch (IOException ex) {

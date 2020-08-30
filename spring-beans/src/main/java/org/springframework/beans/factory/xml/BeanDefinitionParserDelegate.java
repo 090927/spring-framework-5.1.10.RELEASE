@@ -561,22 +561,29 @@ public class BeanDefinitionParserDelegate {
 			AbstractBeanDefinition bd = createBeanDefinition(className, parent);
 
 			/**
-			 * 对当前 bean 元素中配置的一些属性，进行解析和设置。{@link #parseBeanDefinitionAttributes(Element, String, BeanDefinition, AbstractBeanDefinition)}
+			 * 【 对当前 bean 元素中配置的一些属性，进行解析和设置 】{@link #parseBeanDefinitionAttributes(Element, String, BeanDefinition, AbstractBeanDefinition)}
 			 */
 			parseBeanDefinitionAttributes(ele, beanName, containingBean, bd);
 			//  设置描述信息。
 			bd.setDescription(DomUtils.getChildElementValueByTagName(ele, DESCRIPTION_ELEMENT));
-			// meata 属性进行解析。
+
+			/**
+			 * meta 属性进行解析 {@link #parseMetaElements(Element, BeanMetadataAttributeAccessor)}
+			 */
 			parseMetaElements(ele, bd);
-			//  lookup-method 属性解析
+
+			/**
+			 * lookup-method 属性解析 {@link #parseLookupOverrideSubElements(Element, MethodOverrides)}
+			 */
 			parseLookupOverrideSubElements(ele, bd.getMethodOverrides());
+
 			/**
 			 * replaced-method 属性解析 {@link #parseReplacedMethodSubElements(Element, MethodOverrides)}
 			 */
 			parseReplacedMethodSubElements(ele, bd.getMethodOverrides());
 
 			/**
-			 * 解析 bean 元素构造方法设置。{@link #parseConstructorArgElements(Element, BeanDefinition)}
+			 * 解析 bean 构造函数参数。{@link #parseConstructorArgElements(Element, BeanDefinition)}
 			 */
 			parseConstructorArgElements(ele, bd);
 
@@ -725,24 +732,35 @@ public class BeanDefinitionParserDelegate {
 	protected AbstractBeanDefinition createBeanDefinition(@Nullable String className, @Nullable String parentName)
 			throws ClassNotFoundException {
 
-		// 指定类加载器会立即加载。
+		/**
+		 * 指定类加载器会立即加载。{@link BeanDefinitionReaderUtils#createBeanDefinition(String, String, ClassLoader)}
+		 */
 		return BeanDefinitionReaderUtils.createBeanDefinition(
 				parentName, className, this.readerContext.getBeanClassLoader());
 	}
 
 	/**
 	 * Parse the meta elements underneath the given element, if any.
+	 *
+	 *  解析子元素 mate
 	 */
 	public void parseMetaElements(Element ele, BeanMetadataAttributeAccessor attributeAccessor) {
+
+		// 获取当前节点的所有子元素。
 		NodeList nl = ele.getChildNodes();
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node node = nl.item(i);
+
+			// 提取 mate。
 			if (isCandidateElement(node) && nodeNameEquals(node, META_ELEMENT)) {
 				Element metaElement = (Element) node;
 				String key = metaElement.getAttribute(KEY_ATTRIBUTE);
 				String value = metaElement.getAttribute(VALUE_ATTRIBUTE);
+
+				// 使用 key, value 构件 BeanMetadataAttribute 对象。
 				BeanMetadataAttribute attribute = new BeanMetadataAttribute(key, value);
 				attribute.setSource(extractSource(metaElement));
+				// 记录信息。
 				attributeAccessor.addMetadataAttribute(attribute);
 			}
 		}
@@ -832,14 +850,24 @@ public class BeanDefinitionParserDelegate {
 
 	/**
 	 * Parse lookup-override sub-elements of the given bean element.
+	 *
+	 *  解析 lookup-method 子元素
 	 */
 	public void parseLookupOverrideSubElements(Element beanEle, MethodOverrides overrides) {
+
+		// 获取当前元素的所有子元素。
 		NodeList nl = beanEle.getChildNodes();
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node node = nl.item(i);
+
+			// 仅在 Spring 默认 bean的子元素下，且 <lookup-method> 才有效。
 			if (isCandidateElement(node) && nodeNameEquals(node, LOOKUP_METHOD_ELEMENT)) {
 				Element ele = (Element) node;
+
+				// 获取要修改的方法。
 				String methodName = ele.getAttribute(NAME_ATTRIBUTE);
+
+				// 获取配置返回的 bean。
 				String beanRef = ele.getAttribute(BEAN_ELEMENT);
 				LookupOverride override = new LookupOverride(methodName, beanRef);
 				override.setSource(extractSource(ele));
@@ -1562,7 +1590,6 @@ public class BeanDefinitionParserDelegate {
 	public BeanDefinition parseCustomElement(Element ele, @Nullable BeanDefinition containingBd) {
 		/**
 		 * 获取xml配置文件中的命名空间http://www.springframework.org/schema/context
-		 *
 		 */
 		String namespaceUri = getNamespaceURI(ele);
 		if (namespaceUri == null) {

@@ -1918,7 +1918,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 		Object object = null;
 		if (mbd == null) {
-			// 从 bean 工厂缓存中获取指定名称的 bean实例对象。
+
+			/**
+			 * 从 bean 工厂缓存中获取指定名称的 bean实例对象。
+			 *  1、从缓存中获取。
+			 *  2、当 object == null , `getObjectFromFactoryBean()` 方法会 put(beanName, object)
+			 */
 			object = getCachedObjectForFactoryBean(beanName);
 		}
 		if (object == null) {

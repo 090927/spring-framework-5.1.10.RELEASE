@@ -176,6 +176,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	public AbstractAutowireCapableBeanFactory() {
 		super();
+
+		/**
+		 * 忽略给定接口的自动装配功能。{@link #ignoreDependencyInterface(Class)}
+		 */
 		ignoreDependencyInterface(BeanNameAware.class);
 		ignoreDependencyInterface(BeanFactoryAware.class);
 		ignoreDependencyInterface(BeanClassLoaderAware.class);
@@ -186,6 +190,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @param parentBeanFactory parent bean factory, or {@code null} if none
 	 */
 	public AbstractAutowireCapableBeanFactory(@Nullable BeanFactory parentBeanFactory) {
+
+		/**
+		 * this {@link #AbstractAutowireCapableBeanFactory()}
+		 */
 		this();
 		setParentBeanFactory(parentBeanFactory);
 	}

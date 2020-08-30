@@ -129,6 +129,10 @@ public class ResourceEditorRegistrar implements PropertyEditorRegistrar {
 			((PropertyEditorRegistrySupport) registry).overrideDefaultEditor(requiredType, editor);
 		}
 		else {
+
+			/**
+			 * 自定义 {@link PropertyEditorRegistrySupport#registerCustomEditor(Class, PropertyEditor)}
+			 */
 			registry.registerCustomEditor(requiredType, editor);
 		}
 	}

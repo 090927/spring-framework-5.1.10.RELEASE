@@ -71,6 +71,11 @@ public abstract class AopNamespaceUtils {
 		registerComponentIfNecessary(beanDefinition, parserContext);
 	}
 
+	/**
+	 * 注册 `AnnotationAwareAspectJAutoProxyCreator`
+	 * @param parserContext
+	 * @param sourceElement
+	 */
 	public static void registerAspectJAnnotationAutoProxyCreatorIfNecessary(
 			ParserContext parserContext, Element sourceElement) {
 
@@ -109,7 +114,9 @@ public abstract class AopNamespaceUtils {
 			boolean exposeProxy = Boolean.parseBoolean(sourceElement.getAttribute(EXPOSE_PROXY_ATTRIBUTE));
 			if (exposeProxy) {
 
-				// 强制使用的过程其实也是一个属性设置的过程
+				/**
+				 * 强制使用的过程其实也是一个属性设置的过程 {@link AopConfigUtils#forceAutoProxyCreatorToExposeProxy(BeanDefinitionRegistry)}
+				 */
 				AopConfigUtils.forceAutoProxyCreatorToExposeProxy(registry);
 			}
 		}
