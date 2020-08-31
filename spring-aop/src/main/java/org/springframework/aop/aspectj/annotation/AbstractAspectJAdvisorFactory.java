@@ -74,9 +74,17 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 	 * if it has the @Aspect annotation, and was not compiled by ajc. The reason for this latter test
 	 * is that aspects written in the code-style (AspectJ language) also have the annotation present
 	 * when compiled by ajc with the -1.5 flag, yet they cannot be consumed by Spring AOP.
+	 *
+	 *  校验是否是 Aspect。
 	 */
 	@Override
 	public boolean isAspect(Class<?> clazz) {
+
+		/**
+		 * {@link #hasAspectAnnotation(Class)} 获取对应注解类。
+		 * {@link #compiledByAjc(Class)} 验证对应 field 前缀 是否是 {@link AJC_MAGIC}
+		 *
+		 */
 		return (hasAspectAnnotation(clazz) && !compiledByAjc(clazz));
 	}
 

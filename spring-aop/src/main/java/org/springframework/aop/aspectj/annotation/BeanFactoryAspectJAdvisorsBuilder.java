@@ -121,8 +121,8 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 							continue;
 						}
 
-						/*
-						 * 3、判断，是否是一个 Aspect 注解类。
+						/**
+						 * 3、判断，是否是一个 Aspect 注解类。{@link AbstractAspectJAdvisorFactory#isAspect(Class)}
 						 */
 						if (this.advisorFactory.isAspect(beanType)) {
 							aspectNames.add(beanName);

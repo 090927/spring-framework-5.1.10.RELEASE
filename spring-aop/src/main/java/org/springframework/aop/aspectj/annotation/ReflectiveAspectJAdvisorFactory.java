@@ -250,8 +250,10 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 	@Nullable
 	private AspectJExpressionPointcut getPointcut(Method candidateAdviceMethod, Class<?> candidateAspectClass) {
 
-		/*
+		/**
 		 * 获取方法上的 AspectJ 相关注解，包括 @Before、@After、@Around、@Pointcut、@AfterReturning、@AfterThrowing
+		 *
+		 *  {@link AbstractAspectJAdvisorFactory#findAspectJAnnotationOnMethod(Method)}
 		 */
 		AspectJAnnotation<?> aspectJAnnotation =
 				AbstractAspectJAdvisorFactory.findAspectJAnnotationOnMethod(candidateAdviceMethod);
@@ -263,7 +265,9 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 		AspectJExpressionPointcut ajexp =
 				new AspectJExpressionPointcut(candidateAspectClass, new String[0], new Class<?>[0]);
 
-		// 提取到的注解中表达式如 @Pointcut("execution(* *.*test*(..))")中的 execution(* *.*test*(..)
+		/*
+		 * 提取到的注解中表达式如 @Pointcut("execution(* *.*test*(..))")中的 execution(* *.*test*(..)
+		 */
 		ajexp.setExpression(aspectJAnnotation.getPointcutExpression());
 		if (this.beanFactory != null) {
 			ajexp.setBeanFactory(this.beanFactory);

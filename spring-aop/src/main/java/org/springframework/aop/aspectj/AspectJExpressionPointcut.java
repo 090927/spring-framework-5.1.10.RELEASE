@@ -174,6 +174,10 @@ public class AspectJExpressionPointcut extends AbstractExpressionPointcut
 
 	@Override
 	public ClassFilter getClassFilter() {
+
+		/**
+		 * 【 obtainPointcutExpression】{@link #obtainPointcutExpression()}
+		 */
 		obtainPointcutExpression();
 		return this;
 	}
@@ -194,7 +198,13 @@ public class AspectJExpressionPointcut extends AbstractExpressionPointcut
 			throw new IllegalStateException("Must set property 'expression' before attempting to match");
 		}
 		if (this.pointcutExpression == null) {
+
+			// classLoader
 			this.pointcutClassLoader = determinePointcutClassLoader();
+
+			/**
+			 *  构建 pointcutExpression {@link #buildPointcutExpression(ClassLoader)}
+			 */
 			this.pointcutExpression = buildPointcutExpression(this.pointcutClassLoader);
 		}
 		return this.pointcutExpression;
@@ -218,6 +228,8 @@ public class AspectJExpressionPointcut extends AbstractExpressionPointcut
 	 * Build the underlying AspectJ pointcut expression.
 	 */
 	private PointcutExpression buildPointcutExpression(@Nullable ClassLoader classLoader) {
+
+		// 初始化
 		PointcutParser parser = initializePointcutParser(classLoader);
 		PointcutParameter[] pointcutParameters = new PointcutParameter[this.pointcutParameterNames.length];
 		for (int i = 0; i < pointcutParameters.length; i++) {

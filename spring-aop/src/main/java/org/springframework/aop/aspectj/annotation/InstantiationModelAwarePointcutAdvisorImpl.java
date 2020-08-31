@@ -114,7 +114,7 @@ final class InstantiationModelAwarePointcutAdvisorImpl
 			this.lazy = false;
 
 			/**
-			 * instantiateAdvice {@link #instantiateAdvice(AspectJExpressionPointcut)}
+			 * 【 instantiateAdvice 】 {@link #instantiateAdvice(AspectJExpressionPointcut)}
 			 */
 			this.instantiatedAdvice = instantiateAdvice(this.declaredPointcut);
 		}
