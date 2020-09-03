@@ -338,11 +338,23 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 	 * @see #doBegin
 	 *
 	 * 获取TransactionStatus 这里有建立事务连接
+	 *
+	 *
+	 *  1、获取事务
+	 *  2、如果当前线程存在事务，则转向嵌套事务的处理
+	 *  3、事务超时设置验证。
+	 *  4、事务 propagationBehavior 属性的设置验证。
+	 *  5、构建 DefaultTransactionStatus
+	 *  6、完善 transaction 包括设置， ConnectionHolder、隔离级别、timeout, 如果是新连接，则绑定到当前线程。
 	 */
 	@Override
 	public final TransactionStatus getTransaction(@Nullable TransactionDefinition definition) throws TransactionException {
 
-		// 获取 DataSourceTransactionObject 其中包含 ConnectionHolder (包含 Connection)
+		/**
+		 * 获取 DataSourceTransactionObject 其中包含 ConnectionHolder (包含 Connection)
+		 *
+		 *	{@link org.springframework.jdbc.datasource.DataSourceTransactionManager#doGetTransaction()}
+		 */
 		Object transaction = doGetTransaction();
 
 		// Cache debug flag to avoid repeated checks.
@@ -356,7 +368,9 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 		}
 
 		/**
+		 *
 		 * 判断当前线程是否存在事务，判断依据为当前线程记录的连接不为空且连接中(connectionHolder)中的transactionActive属性不为空
+		 *
 		 *  {@link org.springframework.jdbc.datasource.DataSourceTransactionManager#isExistingTransaction(Object)}
 		 */
 		if (isExistingTransaction(transaction)) {
@@ -410,7 +424,11 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				 */
 				doBegin(transaction, definition);
 
-				// 新同步事务的设置，针对与当前线程的设置，将事务信息记录在当前线程中
+				/**
+				 * 新同步事务的设置，针对与当前线程的设置，将事务信息记录在当前线程中
+				 *
+				 *  {@link #prepareSynchronization(DefaultTransactionStatus, TransactionDefinition)}
+				 */
 				prepareSynchronization(status, definition);
 				return status;
 			}
@@ -441,7 +459,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 	/**
 	 * Create a TransactionStatus for an existing transaction.
 	 *
-	 *  在存在事务时是怎么处理的。
+	 *  处理已经存在的事务。
 	 */
 	private TransactionStatus handleExistingTransaction(
 			TransactionDefinition definition, Object transaction, boolean debugEnabled)
@@ -877,6 +895,8 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 		}
 
 		DefaultTransactionStatus defStatus = (DefaultTransactionStatus) status;
+
+		// 【 processRollback 】
 		processRollback(defStatus, false);
 	}
 
@@ -891,12 +911,18 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			boolean unexpectedRollback = unexpected;
 
 			try {
+
+				// 激活所有 TransactionSynchronization 中对应的方法。
 				triggerBeforeCompletion(status);
 
 				if (status.hasSavepoint()) {
 					if (status.isDebug()) {
 						logger.debug("Rolling back transaction to savepoint");
 					}
+
+					/**
+					 * 如果有保存点，也就是说当前事务中为单线程则会退出到保存点。{@link AbstractTransactionStatus#rollbackToHeldSavepoint()}
+					 */
 					status.rollbackToHeldSavepoint();
 				}
 				else if (status.isNewTransaction()) {
@@ -916,6 +942,8 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 							if (status.isDebug()) {
 								logger.debug("Participating transaction failed - marking existing transaction as rollback-only");
 							}
+
+							// 如果当前事务不是独立的事务，那么只能标记状态，等到事务链执行完毕后统一回滚。
 							doSetRollbackOnly(status);
 						}
 						else {
@@ -938,6 +966,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				throw ex;
 			}
 
+			// 激活所有 TransactionSynchronization 中对应的方法。
 			triggerAfterCompletion(status, TransactionSynchronization.STATUS_ROLLED_BACK);
 
 			// Raise UnexpectedRollbackException if we had a global rollback-only marker
@@ -947,6 +976,8 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			}
 		}
 		finally {
+
+			// 清空记录的资源并将挂起的资源恢复。
 			cleanupAfterCompletion(status);
 		}
 	}

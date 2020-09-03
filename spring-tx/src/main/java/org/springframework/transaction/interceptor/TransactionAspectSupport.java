@@ -496,6 +496,14 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 	 * The {@code hasTransaction()} method on TransactionInfo can be used to
 	 * tell if there was a transaction created.
 	 * @see #getTransactionAttributeSource()
+	 *
+	 *
+	 * 1、使用 `DelegatingTransactionAttribute` 封装传入 `TransactionAttribute 实例`
+	 * 2、获取事务
+	 * 		`getTransaction`
+	 * 3、构建事务信息
+	 * 		构建 `TransactionInfo` 并返回。
+	 *
 	 */
 	@SuppressWarnings("serial")
 	protected TransactionInfo createTransactionIfNecessary(@Nullable PlatformTransactionManager tm,
@@ -530,7 +538,9 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			}
 		}
 
-		// 根据指定的属性与status准备一个TransactionInfo
+		/**
+		 * 根据指定的属性与status准备一个TransactionInfo {@link #prepareTransactionInfo(PlatformTransactionManager, TransactionAttribute, String, TransactionStatus)}
+		 */
 		return prepareTransactionInfo(tm, txAttr, joinpointIdentification, status);
 	}
 
@@ -553,6 +563,8 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				logger.trace("Getting transaction for [" + txInfo.getJoinpointIdentification() + "]");
 			}
 			// The transaction manager will flag an error if an incompatible tx already exists.
+
+			// 记录事务状态。
 			txInfo.newTransactionStatus(status);
 		}
 		else {
@@ -597,7 +609,11 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 	 * @param txInfo information about the current transaction
 	 * @param ex throwable encountered
 	 *
-	 *           【 事务回滚 】
+	 *  【 事务回滚 】
+	 *
+	 *  1、回滚条件
+	 *  2、回滚处理
+	 *  3、
 	 */
 	protected void completeTransactionAfterThrowing(@Nullable TransactionInfo txInfo, Throwable ex) {
 
@@ -608,11 +624,18 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 						"] after exception: " + ex);
 			}
 
-			// 这里判断是否回滚默认的依据是抛出的异常是否是 (ex instanceof RuntimeException || ex instanceof Error)，我们熟悉的Exception默认是不处理的
+			/**
+			 * 这里判断是否回滚默认的依据是抛出的异常是否是 (ex instanceof RuntimeException || ex instanceof Error)，我们熟悉的Exception默认是不处理的
+			 *
+			 *  {@link DefaultTransactionAttribute#rollbackOn(Throwable)}
+			 *
+			 */
 			if (txInfo.transactionAttribute != null && txInfo.transactionAttribute.rollbackOn(ex)) {
 				try {
 
 					/**
+					 *  根据 `transactionStatus` 信息进行回滚处理。
+					 *
 					 * 回滚 {@link org.springframework.transaction.support.AbstractPlatformTransactionManager#rollback(TransactionStatus)}
 					 */
 					txInfo.getTransactionManager().rollback(txInfo.getTransactionStatus());
@@ -631,7 +654,9 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				// We don't roll back on this exception.
 				// Will still roll back if TransactionStatus.isRollbackOnly() is true.
 
-				//  如果不满足回滚条件即使抛出异常也同样会提交
+				/*
+				 * 如果不满足回滚条件即使抛出异常也同样会提交
+				 */
 				try {
 					txInfo.getTransactionManager().commit(txInfo.getTransactionStatus());
 				}

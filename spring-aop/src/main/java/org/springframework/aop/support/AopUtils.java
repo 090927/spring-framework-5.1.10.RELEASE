@@ -226,6 +226,7 @@ public abstract class AopUtils {
 			return false;
 		}
 
+		// pc.getMethodMatcher() 返回正式本身 this。
 		MethodMatcher methodMatcher = pc.getMethodMatcher();
 		if (methodMatcher == MethodMatcher.TRUE) {
 			// No need to iterate the methods if we're matching any method anyway...
@@ -247,7 +248,9 @@ public abstract class AopUtils {
 		}
 		classes.addAll(ClassUtils.getAllInterfacesForClassAsSet(targetClass));
 
-		// 获取对应类的所有接口并连同类本身一起遍历，在遍历过程中又对类中的方法再次遍历，一但匹配成功便认为这个类使用于当前增强器
+		/*
+		 * 获取对应类的所有接口并连同类本身一起遍历，在遍历过程中又对类中的方法再次遍历，一但匹配成功便认为这个类使用于当前增强器
+		 */
 		for (Class<?> clazz : classes) {
 			Method[] methods = ReflectionUtils.getAllDeclaredMethods(clazz);
 			for (Method method : methods) {

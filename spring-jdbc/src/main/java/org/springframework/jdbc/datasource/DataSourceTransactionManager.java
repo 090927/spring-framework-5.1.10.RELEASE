@@ -237,8 +237,12 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 	protected Object doGetTransaction() {
 		DataSourceTransactionObject txObject = new DataSourceTransactionObject();
 		txObject.setSavepointAllowed(isNestedTransactionAllowed());
+
+		// 如果当前线程已经记录，数据库连接则使用原有连接。
 		ConnectionHolder conHolder =
 				(ConnectionHolder) TransactionSynchronizationManager.getResource(obtainDataSource());
+
+		// false 表示非新创建连接。
 		txObject.setConnectionHolder(conHolder, false);
 		return txObject;
 	}
@@ -259,6 +263,14 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 	 *
 	 * 		构建transaction ，包括设置ConnectionHolder、隔离级别、timout
 	 * 	如果是新连接，绑定到当前线程，这个函数已经开始尝试了对数据库连接的获取
+	 *
+	 *
+	 * 	1、尝试获取连接
+	 * 	2、设置隔离级别以及只读标识
+	 * 	3、更改默认的提交设置
+	 * 	4、设置标志位，标识当前连接已经被事务激活
+	 * 	5、设置过期时间。
+	 * 	6、将 connectionHolder 绑定到当前线程。
 	 */
 	@Override
 	protected void doBegin(Object transaction, TransactionDefinition definition) {

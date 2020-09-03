@@ -75,6 +75,8 @@ public abstract class AopConfigUtils {
 
 		/**
 		 * `注册 IOC` {@link #registerOrEscalateApcAsRequired(Class, BeanDefinitionRegistry, Object)}
+		 *
+		 *   `InfrastructureAdvisorAutoProxyCreator` 间接实现 `SmartInstantiationAwareBeanPostProcessor` 接口
 		 */
 		return registerOrEscalateApcAsRequired(InfrastructureAdvisorAutoProxyCreator.class, registry, source);
 	}
