@@ -411,6 +411,8 @@ public class ContextLoader {
 		else {
 
 			/*
+			 * 【 执行静态代码块】
+			 *
 			 * 若无自定义配置，则获取默认的容器类型，默认类型为 XmlWebApplicationContext。
 			 * defaultStrategies 读取的配置文件为 ContextLoader.properties，
 			 * 该配置文件内容如下：

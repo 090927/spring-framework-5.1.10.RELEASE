@@ -160,11 +160,21 @@ public abstract class AbstractJmsListeningContainer extends JmsDestinationAccess
 
 	/**
 	 * Delegates to {@link #validateConfiguration()} and {@link #initialize()}.
+	 *
+	 *  实现 InitializingBean 接口`afterPropertiesSet`
 	 */
 	@Override
 	public void afterPropertiesSet() {
+
+		// 验证 connectionFactory
 		super.afterPropertiesSet();
+
+		// 验证配置文件
 		validateConfiguration();
+
+		/**
+		 * 初始化 {@link #initialize()}
+		 */
 		initialize();
 	}
 
@@ -198,10 +208,16 @@ public abstract class AbstractJmsListeningContainer extends JmsDestinationAccess
 	 */
 	public void initialize() throws JmsException {
 		try {
+
+			// 使用 `lifecycleMonitor` 控制生命周期的同步处理。
 			synchronized (this.lifecycleMonitor) {
 				this.active = true;
 				this.lifecycleMonitor.notifyAll();
 			}
+
+			/**
+			 * 【 doInitialize 】{@link DefaultMessageListenerContainer#doInitialize()}
+			 */
 			doInitialize();
 		}
 		catch (JMSException ex) {
@@ -515,6 +531,10 @@ public abstract class AbstractJmsListeningContainer extends JmsDestinationAccess
 	protected final boolean rescheduleTaskIfNecessary(Object task) {
 		if (this.running) {
 			try {
+
+				/**
+				 * 开启一个线程执行 Runnable. {@link DefaultMessageListenerContainer#doRescheduleTask(Object)}
+				 */
 				doRescheduleTask(task);
 			}
 			catch (RuntimeException ex) {

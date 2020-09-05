@@ -43,6 +43,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.i18n.LocaleContext;
@@ -495,6 +496,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	 */
 	@Override
 	protected void onRefresh(ApplicationContext context) {
+		// 【 initStrategies 】
 		initStrategies(context);
 	}
 
@@ -507,19 +509,30 @@ public class DispatcherServlet extends FrameworkServlet {
 		 * 多文件上传 {@link #initMultipartResolver(ApplicationContext)}
 		 */
 		initMultipartResolver(context);
+
 		/**
 		 * 本地语言环境 {@link #initLocaleResolver(ApplicationContext)}
 		 */
 		initLocaleResolver(context);
-		// 模板处理器
-		initThemeResolver(context);
-		// handlerMapping
-		initHandlerMappings(context);
+
 		/**
-		 * 参数适配器 {@link #initHandlerMappings(ApplicationContext)}
+		 * 模板处理器 {@link #initThemeResolver(ApplicationContext)}
+		 */
+		initThemeResolver(context);
+
+		/**
+		 * 初始化 `handlerMapping` {@link #initHandlerMappings(ApplicationContext)}
+		 */
+		initHandlerMappings(context);
+
+		/**
+		 * 初始化 `initHandlerAdapters` {@link #initHandlerAdapters(ApplicationContext)}
 		 */
 		initHandlerAdapters(context);
-		// 异常拦截器
+
+		/**
+		 * 初始化异常拦截器 {@link #initHandlerExceptionResolvers(ApplicationContext)}
+		 */
 		initHandlerExceptionResolvers(context);
 		// 视图预处理器
 		initRequestToViewNameTranslator(context);
@@ -700,6 +713,10 @@ public class DispatcherServlet extends FrameworkServlet {
 		// Ensure we have at least some HandlerAdapters, by registering
 		// default HandlerAdapters if no other adapters are found.
 		if (this.handlerAdapters == null) {
+
+			/**
+			 *  获取默认 handlerAdapters 适配器 {@link #getDefaultStrategies(ApplicationContext, Class)}
+			 */
 			this.handlerAdapters = getDefaultStrategies(context, HandlerAdapter.class);
 			if (logger.isTraceEnabled()) {
 				logger.trace("No HandlerAdapters declared for servlet '" + getServletName() +
@@ -920,7 +937,11 @@ public class DispatcherServlet extends FrameworkServlet {
 					// 通过类的名字加载这个类。
 					Class<?> clazz = ClassUtils.forName(className, DispatcherServlet.class.getClassLoader());
 
-					// 在 Web 应用程序环境中创建这个组件的类。
+					/**
+					 * 在 Web 应用程序环境中创建这个组件的类。 {@link #createDefaultStrategy(ApplicationContext, Class)}
+					 *
+					 * 	 最终调用 {@link org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#createBean(String, RootBeanDefinition, Object[])}
+					 */
 					Object strategy = createDefaultStrategy(context, clazz);
 					strategies.add((T) strategy);
 				}
@@ -1100,13 +1121,21 @@ public class DispatcherServlet extends FrameworkServlet {
 
 				// 如果Handler 不存在，返回 404.
 				if (mappedHandler == null) {
+
+					/**
+					 *  没有找到对应 handler 的错误处理。
+					 */
 					noHandlerFound(processedRequest, response);
 					return;
 				}
 
 				// Determine handler adapter for the current request.
 
-				// 3、获取处理请求的处理器适配器 HandlerAdapter.
+				/**
+				 * 3、获取处理请求的处理器适配器 HandlerAdapter.{@link #getHandlerAdapter(Object)}
+				 *
+				 *  默认 WEB 请求会交给 `SimpleControllerHandlerAdapter` 进行处理。
+				 */
 				HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
 
 				// Process last-modified header, if supported by the handler.
@@ -1115,6 +1144,12 @@ public class DispatcherServlet extends FrameworkServlet {
 				String method = request.getMethod();
 				boolean isGet = "GET".equals(method);
 				if (isGet || "HEAD".equals(method)) {
+
+					/**
+					 *
+					 * lastModified 缓存机制
+					 *
+					 */
 					long lastModified = ha.getLastModified(request, mappedHandler.getHandler());
 					if (new ServletWebRequest(request, response).checkNotModified(lastModified) && isGet) {
 						return;
@@ -1375,6 +1410,10 @@ public class DispatcherServlet extends FrameworkServlet {
 	protected HandlerAdapter getHandlerAdapter(Object handler) throws ServletException {
 		if (this.handlerAdapters != null) {
 			for (HandlerAdapter adapter : this.handlerAdapters) {
+
+				/**
+				 *  supports {@link org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter#supports(Object)}
+				 */
 				if (adapter.supports(handler)) {
 					return adapter;
 				}

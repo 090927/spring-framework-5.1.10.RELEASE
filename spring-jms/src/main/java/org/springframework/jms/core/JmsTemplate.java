@@ -491,7 +491,15 @@ public class JmsTemplate extends JmsDestinationAccessor implements JmsOperations
 			Session sessionToUse = ConnectionFactoryUtils.doGetTransactionalSession(
 					obtainConnectionFactory(), this.transactionalResourceFactory, startConnection);
 			if (sessionToUse == null) {
+
+				/**
+				 * 创建 connection
+				 */
 				conToClose = createConnection();
+
+				/**
+				 * 创建 session
+				 */
 				sessionToClose = createSession(conToClose);
 				if (startConnection) {
 					conToClose.start();
@@ -501,13 +509,18 @@ public class JmsTemplate extends JmsDestinationAccessor implements JmsOperations
 			if (logger.isDebugEnabled()) {
 				logger.debug("Executing callback on JMS Session: " + sessionToUse);
 			}
+
+			// 执行回调函数。
 			return action.doInJms(sessionToUse);
 		}
 		catch (JMSException ex) {
 			throw convertJmsAccessException(ex);
 		}
 		finally {
+			// 关闭 session
 			JmsUtils.closeSession(sessionToClose);
+
+			// 释放链接
 			ConnectionFactoryUtils.releaseConnection(conToClose, getConnectionFactory(), startConnection);
 		}
 	}

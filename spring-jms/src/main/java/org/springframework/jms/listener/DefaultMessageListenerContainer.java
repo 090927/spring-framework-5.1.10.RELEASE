@@ -551,6 +551,8 @@ public class DefaultMessageListenerContainer extends AbstractPollingMessageListe
 	protected void doInitialize() throws JMSException {
 		synchronized (this.lifecycleMonitor) {
 			for (int i = 0; i < this.concurrentConsumers; i++) {
+
+				// 【 scheduleNewInvoker 】
 				scheduleNewInvoker();
 			}
 		}
@@ -710,6 +712,10 @@ public class DefaultMessageListenerContainer extends AbstractPollingMessageListe
 	 */
 	private void scheduleNewInvoker() {
 		AsyncMessageListenerInvoker invoker = new AsyncMessageListenerInvoker();
+
+		/**
+		 *  【 rescheduleTaskIfNecessary 】 {@link #rescheduleTaskIfNecessary(Object)}
+		 */
 		if (rescheduleTaskIfNecessary(invoker)) {
 			// This should always be true, since we're only calling this when active.
 			this.scheduledInvokers.add(invoker);
@@ -733,6 +739,10 @@ public class DefaultMessageListenerContainer extends AbstractPollingMessageListe
 	@Override
 	protected void doRescheduleTask(Object task) {
 		Assert.state(this.taskExecutor != null, "No TaskExecutor available");
+
+		/**
+		 *  执行 {@link AsyncMessageListenerInvoker#run()}
+		 */
 		this.taskExecutor.execute((Runnable) task);
 	}
 
@@ -1067,17 +1077,31 @@ public class DefaultMessageListenerContainer extends AbstractPollingMessageListe
 
 		@Override
 		public void run() {
+
+			// 并发控制
 			synchronized (lifecycleMonitor) {
 				activeInvokerCount++;
 				lifecycleMonitor.notifyAll();
 			}
 			boolean messageReceived = false;
 			try {
+
+				/*
+				 *
+				 * 根据每个任务设置的最大处理消息量而作为不同处理。
+				 * 小于0，默认为无限制，一直接收消息。
+				 */
 				if (maxMessagesPerTask < 0) {
+
+					/**
+					 *  【核心处理】{@link #executeOngoingLoop()}
+					 */
 					messageReceived = executeOngoingLoop();
 				}
 				else {
 					int messageCount = 0;
+
+					// 消息数量控制，一旦超出数量则停止循环
 					while (isRunning() && messageCount < maxMessagesPerTask) {
 						messageReceived = (invokeListener() || messageReceived);
 						messageCount++;
@@ -1085,6 +1109,8 @@ public class DefaultMessageListenerContainer extends AbstractPollingMessageListe
 				}
 			}
 			catch (Throwable ex) {
+
+				// 异常情况，清理操作，关闭 session 等。
 				clearResources();
 				if (!this.lastMessageSucceeded) {
 					// We failed more than once in a row or on startup -
@@ -1144,6 +1170,11 @@ public class DefaultMessageListenerContainer extends AbstractPollingMessageListe
 			}
 		}
 
+		/**
+		 * 核心处理，invokerListener 来接收消息并激活消息监听器。
+		 * @return
+		 * @throws JMSException
+		 */
 		private boolean executeOngoingLoop() throws JMSException {
 			boolean messageReceived = false;
 			boolean active = true;
@@ -1151,16 +1182,24 @@ public class DefaultMessageListenerContainer extends AbstractPollingMessageListe
 				synchronized (lifecycleMonitor) {
 					boolean interrupted = false;
 					boolean wasWaiting = false;
+
+					// 如果当前任务已经处于激活状态是却给暂时终止的命令。
 					while ((active = isActive()) && !isRunning()) {
 						if (interrupted) {
 							throw new IllegalStateException("Thread was interrupted while waiting for " +
 									"a restart of the listener container, but container is still stopped");
 						}
 						if (!wasWaiting) {
+
+							// 如果并非处于等待状态则说明是第一次执行，需要将激活任务数量减少。
 							decreaseActiveInvokerCount();
 						}
+
+						// 开始进入等待状态，等待任务的恢复命令
 						wasWaiting = true;
 						try {
+
+							// 通过等待命令，也就是等待 notify 或者 notifyAll.
 							lifecycleMonitor.wait();
 						}
 						catch (InterruptedException ex) {
@@ -1176,7 +1215,13 @@ public class DefaultMessageListenerContainer extends AbstractPollingMessageListe
 						active = false;
 					}
 				}
+
+				// 正常处理流程。
 				if (active) {
+
+					/**
+					 * 消息接收的处理 {@link #invokeListener()}
+					 */
 					messageReceived = (invokeListener() || messageReceived);
 				}
 			}
@@ -1186,8 +1231,18 @@ public class DefaultMessageListenerContainer extends AbstractPollingMessageListe
 		private boolean invokeListener() throws JMSException {
 			this.currentReceiveThread = Thread.currentThread();
 			try {
+
+				/**
+				 *  初始化资源包括首次创建的时候创建 Session、consumer。
+				 */
 				initResourcesIfNecessary();
+
+				/**
+				 * 核心处理 {@link #receiveAndExecute(Object, Session, MessageConsumer)}
+				 */
 				boolean messageReceived = receiveAndExecute(this, this.session, this.consumer);
+
+				// 改变标志位，信息成功处理
 				this.lastMessageSucceeded = true;
 				return messageReceived;
 			}

@@ -43,6 +43,7 @@ import org.springframework.context.event.SourceFilteringListener;
 import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.i18n.SimpleLocaleContext;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -609,20 +610,24 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 						cwac.setParent(rootContext);
 					}
 
-					// 配置并刷新容器
+					/**
+					 * 刷新上下文环境。{@link #configureAndRefreshWebApplicationContext(ConfigurableWebApplicationContext)}
+					 */
 					configureAndRefreshWebApplicationContext(cwac);
 				}
 			}
 		}
-		/**
-		 * 先去ServletContext 中查找 web 容器的引用是否存在，并创建默认的空IOC 容器
-		 *  {@link #findWebApplicationContext()}
-		 */
+
 		if (wac == null) {
 			// No context instance was injected at construction time -> see if one
 			// has been registered in the servlet context. If one exists, it is assumed
 			// that the parent context (if any) has already been set and that the
 			// user has performed any initialization such as setting the context id
+
+			/**
+			 * 先去ServletContext 中查找 web 容器的引用是否存在，并创建默认的空IOC 容器
+			 *  {@link #findWebApplicationContext()}
+			 */
 			wac = findWebApplicationContext();
 		}
 		if (wac == null) {
@@ -634,16 +639,19 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			wac = createWebApplicationContext(rootContext);
 		}
 
-		/**
-		 * 触发 onRefresh, 初始化策略: （可以使 Spring Web MVC 的组件动态地重新加载 ）
-		 * {@link DispatcherServlet#onRefresh(ApplicationContext)}
-		 */
+
 		if (!this.refreshEventReceived) {
 			// Either the context is not a ConfigurableApplicationContext with refresh
 			// support or the context injected at construction time had already been
 			// refreshed -> trigger initial onRefresh manually here.
 
 			synchronized (this.onRefreshMonitor) {
+
+				/**
+				 * 触发 onRefresh, 初始化策略: （可以使 Spring Web MVC 的组件动态地重新加载 ） {@link DispatcherServlet#onRefresh(ApplicationContext)}
+				 *
+				 *  由 `FrameworkServlet` 子类实现改方法。
+				 */
 				onRefresh(wac);
 			}
 		}
@@ -765,6 +773,10 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 
 		postProcessWebApplicationContext(wac);
 		applyInitializers(wac);
+
+		/**
+		 * 加载配置文件及整合 parent 到 wac {@link AbstractApplicationContext#refresh()}
+		 */
 		wac.refresh();
 	}
 

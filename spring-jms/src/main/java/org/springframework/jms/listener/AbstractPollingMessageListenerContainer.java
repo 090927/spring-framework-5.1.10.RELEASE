@@ -242,6 +242,10 @@ public abstract class AbstractPollingMessageListenerContainer extends AbstractMe
 			TransactionStatus status = this.transactionManager.getTransaction(this.transactionDefinition);
 			boolean messageReceived;
 			try {
+
+				/**
+				 *  消息的接收处理过程 {@link #doReceiveAndExecute(Object, Session, MessageConsumer, TransactionStatus)}
+				 */
 				messageReceived = doReceiveAndExecute(invoker, session, consumer, status);
 			}
 			catch (JMSException | RuntimeException | Error ex) {
@@ -300,6 +304,8 @@ public abstract class AbstractPollingMessageListenerContainer extends AbstractMe
 				consumerToUse = createListenerConsumer(sessionToUse);
 				consumerToClose = consumerToUse;
 			}
+
+			// 接收消息
 			Message message = receiveMessage(consumerToUse);
 			if (message != null) {
 				if (logger.isDebugEnabled()) {
@@ -307,6 +313,8 @@ public abstract class AbstractPollingMessageListenerContainer extends AbstractMe
 							consumerToUse + "] of " + (transactional ? "transactional " : "") + "session [" +
 							sessionToUse + "]");
 				}
+
+				// 模板方法，当消息接收并在未处理前给子类相应的处理。
 				messageReceived(invoker, sessionToUse);
 				boolean exposeResource = (!transactional && isExposeListenerSession() &&
 						!TransactionSynchronizationManager.hasResource(obtainConnectionFactory()));
@@ -315,6 +323,8 @@ public abstract class AbstractPollingMessageListenerContainer extends AbstractMe
 							obtainConnectionFactory(), new LocallyExposedJmsResourceHolder(sessionToUse));
 				}
 				try {
+
+					// 激活监听器。
 					doExecuteListener(sessionToUse, message);
 				}
 				catch (Throwable ex) {
