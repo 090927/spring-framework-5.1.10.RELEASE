@@ -110,8 +110,10 @@ class ConditionEvaluator {
 
 		List<Condition> conditions = new ArrayList<>();
 
-		/*
+		/**
 		 *  3. 获取配置类的条件注解得到条件数据，并添加到集合中  getConditionClasses 获取所有 Condition 信息。
+		 *
+		 *  {@link #getConditionClasses(AnnotatedTypeMetadata)} 获取condition 属性。
 		 */
 		for (String[] conditionClasses : getConditionClasses(metadata)) {
 			for (String conditionClass : conditionClasses) {
