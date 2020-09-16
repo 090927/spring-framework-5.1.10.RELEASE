@@ -863,7 +863,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		// Trigger initialization of all non-lazy singleton beans...
 		for (String beanName : beanNames) {
-			// 获取bean 定义
+
+			/**
+			 * 获取bean 定义 {@link #getMergedLocalBeanDefinition(String)}
+			 */
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
 
 			// bean 不是抽象，是单例模式，lazy-init 属性为false。
@@ -908,6 +911,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		// Trigger post-initialization callback for all applicable beans...
 		for (String beanName : beanNames) {
+
+			/**
+			 * 获取单例 bean {@link #getSingleton(String, boolean)}
+			 */
 			Object singletonInstance = getSingleton(beanName);
 
 			/**
@@ -1299,7 +1306,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					descriptor, requestingBeanName);
 			if (result == null) {
 
-				// 解析依赖
+				/**
+				 * 【 解析依赖 】 {@link #doResolveDependency(DependencyDescriptor, String, Set, TypeConverter)}
+				 */
 				result = doResolveDependency(descriptor, requestingBeanName, autowiredBeanNames, typeConverter);
 			}
 			return result;

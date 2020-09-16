@@ -75,7 +75,11 @@ public class BeanNameViewResolver extends WebApplicationObjectSupport implements
 	@Override
 	@Nullable
 	public View resolveViewName(String viewName, Locale locale) throws BeansException {
+
+		// 获取上下文。
 		ApplicationContext context = obtainApplicationContext();
+
+		// 判断上下文中是否存在 bean 定义。
 		if (!context.containsBean(viewName)) {
 			// Allow for ViewResolver chaining...
 			return null;

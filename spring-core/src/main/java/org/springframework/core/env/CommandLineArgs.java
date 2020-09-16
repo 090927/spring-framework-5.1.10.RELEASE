@@ -32,10 +32,15 @@ import org.springframework.lang.Nullable;
  * @author Chris Beams
  * @since 3.1
  * @see SimpleCommandLineArgsParser
+ *
+ *   命令行参数
  */
 class CommandLineArgs {
 
+	// 选项参数
 	private final Map<String, List<String>> optionArgs = new HashMap<>();
+
+	// 非选项参数。
 	private final List<String> nonOptionArgs = new ArrayList<>();
 
 	/**

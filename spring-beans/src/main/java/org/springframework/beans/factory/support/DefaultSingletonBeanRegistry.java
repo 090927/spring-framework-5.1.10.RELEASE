@@ -497,7 +497,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 */
 	public void registerDependentBean(String beanName, String dependentBeanName) {
 
-		// 处理 bean 名称，将别名转换为规范 bean 名称。
+		/**
+		 * 处理 bean 名称，将别名转换为规范 bean 名称。{@link #canonicalName(String)}
+		 */
 		String canonicalName = canonicalName(beanName);
 
 		/**
@@ -519,7 +521,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 			Set<String> dependenciesForBean =
 					this.dependenciesForBeanMap.computeIfAbsent(dependentBeanName, k -> new LinkedHashSet<>(8));
 
-			// 添加bean。
+			/*
+			 * 在容器中通过 “Bean 名称” -》 指定bean 的依赖 bean名称集合，添加bean的依赖信息。即将 `bean` 所依赖的bean添加到容器的集合中
+			 */
 			dependenciesForBean.add(canonicalName);
 		}
 	}
