@@ -62,15 +62,16 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 		// but we need to preserve order in the ultimate list.
 
 		/**
-		 * TODO 注册通知
+		 * TODO 注册通知  `registry`
 		 * 注册一系列， AdvisorAdapter 用于将 Advisor 转化成 MethodInterceptor
 		 *  	`GlobalAdvisorAdapterRegistry.getInstance();` 提供 `DefaultAdvisorAdapterRegistry`
 		 *
-		 *  实现类 {@link DefaultAdvisorAdapterRegistry#DefaultAdvisorAdapterRegistry()}
+		 *   通过空构造函数, 实现注册通知 {@link DefaultAdvisorAdapterRegistry#DefaultAdvisorAdapterRegistry()}
 		 */
 
-		// registry 为 DefaultAdvisorAdapterRegistry 类型
 		AdvisorAdapterRegistry registry = GlobalAdvisorAdapterRegistry.getInstance();
+
+		// 获取 Advisor 列表。
 		Advisor[] advisors = config.getAdvisors();
 		List<Object> interceptorList = new ArrayList<>(advisors.length);
 		Class<?> actualClass = (targetClass != null ? targetClass : method.getDeclaringClass());
@@ -105,7 +106,7 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 					if (match) {
 
 						/**
-						 * 将 advisor 中的 advice 转成相应的拦截器 {@link DefaultAdvisorAdapterRegistry#getInterceptors(Advisor)}
+						 *  将 Advisor 转换成 Interceptor {@link DefaultAdvisorAdapterRegistry#getInterceptors(Advisor)}
 						 */
 						MethodInterceptor[] interceptors = registry.getInterceptors(advisor);
 

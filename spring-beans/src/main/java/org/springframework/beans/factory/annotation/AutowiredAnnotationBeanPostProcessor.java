@@ -230,7 +230,15 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+
+		/**
+		 *  获取 `AutoWired` 元数据 {@link #findAutowiringMetadata(String, Class, PropertyValues)}
+		 */
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, beanType, null);
+
+		/**
+		 * [ checkConfigMembers] {@link InjectionMetadata#checkConfigMembers(RootBeanDefinition)}
+		 */
 		metadata.checkConfigMembers(beanDefinition);
 	}
 
@@ -430,12 +438,14 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	 * @param pvs
 	 *
 	 *
-	 * 获取这个bean 那些属性需要注入
+	 * 获取这个bean `AutoWired` 元数据。
 	 */
 	private InjectionMetadata findAutowiringMetadata(String beanName, Class<?> clazz, @Nullable PropertyValues pvs) {
 		// Fall back to class name as cache key, for backwards compatibility with custom callers.
 		String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
 		// Quick check on the concurrent map first, with minimal locking.
+
+		// 从缓存中获取。
 		InjectionMetadata metadata = this.injectionMetadataCache.get(cacheKey);
 		if (InjectionMetadata.needsRefresh(metadata, clazz)) {
 			synchronized (this.injectionMetadataCache) {
@@ -449,6 +459,8 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					 * 缓存没有，调用 {@link #buildAutowiringMetadata(Class)}  方法构建
 					 */
 					metadata = buildAutowiringMetadata(clazz);
+
+					// 放入缓存。
 					this.injectionMetadataCache.put(cacheKey, metadata);
 				}
 			}
@@ -469,15 +481,26 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 			ReflectionUtils.doWithLocalFields(targetClass, field -> {
 
-				// 遍历每一个field，找到被 @Autowired、@Value、@Inject标识的字段
+				/**
+				 * 遍历每一个field，找到被 @Autowired、@Value、@Inject标识的字段 {@link #findAutowiredAnnotation(AccessibleObject)}
+				 */
 				AnnotationAttributes ann = findAutowiredAnnotation(field);
 				if (ann != null) {
+
+					// 如果 field 是静态的。则警告退出。
 					if (Modifier.isStatic(field.getModifiers())) {
 						if (logger.isInfoEnabled()) {
 							logger.info("Autowired annotation is not supported on static fields: " + field);
 						}
 						return;
 					}
+
+					/*
+					 *
+					 * 这里取 Autowired 的一个 required 属性，这个属性的作用是，
+					 *    如果这个是 false，就表明在自动装配的时候没有发现又对应的实例，就跳过去，
+					 *    如果这个是 true，没有发现有与之匹配的就会抛出异常。
+					 */
 					boolean required = determineRequiredStatus(ann);
 
 					// 创建AutowiredFieldElement
@@ -493,6 +516,8 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					return;
 				}
 				AnnotationAttributes ann = findAutowiredAnnotation(bridgedMethod);
+
+				// 同样的静态方法，不能自动装配。
 				if (ann != null && method.equals(ClassUtils.getMostSpecificMethod(method, clazz))) {
 					if (Modifier.isStatic(method.getModifiers())) {
 						if (logger.isInfoEnabled()) {

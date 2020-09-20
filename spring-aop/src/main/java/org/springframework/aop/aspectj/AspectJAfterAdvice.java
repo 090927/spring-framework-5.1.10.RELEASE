@@ -23,6 +23,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
 import org.springframework.aop.AfterAdvice;
+import org.springframework.aop.framework.ReflectiveMethodInvocation;
 
 /**
  * Spring AOP advice wrapping an AspectJ after advice method.
@@ -45,7 +46,9 @@ public class AspectJAfterAdvice extends AbstractAspectJAdvice
 	public Object invoke(MethodInvocation mi) throws Throwable {
 		try {
 
-			// 调用 proceed
+			/**
+			 * 调用 proceed {@link ReflectiveMethodInvocation#proceed()}
+			 */
 			return mi.proceed();
 		}
 		finally {

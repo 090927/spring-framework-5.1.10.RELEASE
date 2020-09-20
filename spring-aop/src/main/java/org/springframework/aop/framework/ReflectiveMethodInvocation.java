@@ -155,6 +155,11 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 	}
 
 
+	/**
+	 * 执行拦截器调用链
+	 * @return
+	 * @throws Throwable
+	 */
 	@Override
 	@Nullable
 	public Object proceed() throws Throwable {
@@ -163,7 +168,9 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 		// 拦截器链中的最后一个拦截器执行完后，即可执行目标方法。
 		if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
 
-			// 执行目标方法
+			/**
+			 * 执行目标方法 {@link #invokeJoinpoint()}
+			 */
 			return invokeJoinpoint();
 		}
 
@@ -226,6 +233,8 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 	 */
 	@Nullable
 	protected Object invokeJoinpoint() throws Throwable {
+
+		// 通过反射进行调用。
 		return AopUtils.invokeJoinpointUsingReflection(this.target, this.method, this.arguments);
 	}
 

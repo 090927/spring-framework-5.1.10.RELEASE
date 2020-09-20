@@ -210,6 +210,7 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 			throw new IllegalStateException("'defaultImpl' attribute must be set on DeclareParents");
 		}
 
+		//  使用 `DeclareParentsAdvisor` 对功能进行封装。
 		return new DeclareParentsAdvisor(
 				introductionField.getType(), declareParents.value(), declareParents.defaultImpl());
 	}
@@ -317,7 +318,11 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 		AbstractAspectJAdvice springAdvice;
 
 
-		// TODO 【按照注解类型生成相应的 Advice 实现类】
+		/*******************************************
+		 *
+		 *  TODO 【按照注解类型生成相应的 Advice 实现类】
+		 *
+		 ******************************************/
 		switch (aspectJAnnotation.getAnnotationType()) {
 			case AtPointcut:
 				if (logger.isDebugEnabled()) {

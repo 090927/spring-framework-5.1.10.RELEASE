@@ -17,6 +17,7 @@
 package org.springframework.aop.framework.adapter;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -50,8 +51,20 @@ public class MethodBeforeAdviceInterceptor implements MethodInterceptor, BeforeA
 	}
 
 
+	/**
+	 *
+	 *  后置增强与前置增强不一样，前置增强是在拦截器链中设置 `MethodBeforeAdviceInterceptor` 而在
+	 *  	`MethodBeforeAdviceInterceptor` 中放置 `AspectJMethodBeforeAdvice` 并在调用 Invoker 时 首先串联调用。
+	 *
+	 */
+
 	@Override
 	public Object invoke(MethodInvocation mi) throws Throwable {
+
+		/**
+		 *  需要串联调用。
+		 * 【 before 】{@link org.springframework.aop.aspectj.AspectJMethodBeforeAdvice#before(Method, Object[], Object)}
+		 */
 		this.advice.before(mi.getMethod(), mi.getArguments(), mi.getThis());
 		return mi.proceed();
 	}

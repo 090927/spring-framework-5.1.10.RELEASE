@@ -152,6 +152,10 @@ import org.springframework.core.Ordered;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+
+/**
+ *  开启事务 {@link TransactionManagementConfigurationSelector}
+ */
 @Import(TransactionManagementConfigurationSelector.class)
 public @interface EnableTransactionManagement {
 

@@ -624,7 +624,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 		if (instanceWrapper == null) {
 
-			/**
+			/*******************
+			 *
+			 *   TODO 创建bean 实例
 			 *
 			 * 创建 bean 实例，并将实例包裹在 BeanWrapper 实现类对象中返回。createBeanInstance
 			 * 中包含三种创建 bean 实例的方式：
@@ -653,12 +655,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// 【 调用 PostProcessor 后置处理器 】
 		synchronized (mbd.postProcessingLock) {
 
-			// 判断是否有后置处理，如果有后置处理，则允许后置处理修改 BeanDefinition
+			/*
+			 * 判断是否有后置处理，如果有后置处理，则允许后置处理修改 BeanDefinition
+			 *  @Autowire 等注解就是在这一步, 完成解析，并将注解需要的信息放入缓存。
+			 */
 			if (!mbd.postProcessed) {
 				try {
 
 					/**
-					 * 处理合并后的 BeanDefinition.
+					 * 处理合并后的 BeanDefinition. {@link #applyMergedBeanDefinitionPostProcessors(RootBeanDefinition, Class, String)}
 					 */
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
@@ -717,7 +722,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			 */
 			populateBean(beanName, mbd, instanceWrapper);
 
-			/**
+			/***********************************
+			 *
+			 *   TODO 实例化 Bean
+			 *
+			 *
 			 * 进行余下的初始化工作，详细如下：
 			 * 1. 判断 bean 是否实现了 BeanNameAware、BeanFactoryAware、
 			 *    BeanClassLoaderAware 等接口，并执行接口方法
@@ -1230,6 +1239,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		for (BeanPostProcessor bp : getBeanPostProcessors()) {
 			if (bp instanceof MergedBeanDefinitionPostProcessor) {
 				MergedBeanDefinitionPostProcessor bdp = (MergedBeanDefinitionPostProcessor) bp;
+
+				/**
+				 * 【 】{@link org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor#postProcessMergedBeanDefinition(RootBeanDefinition, Class, String)}
+				 */
 				bdp.postProcessMergedBeanDefinition(mbd, beanType, beanName);
 			}
 		}

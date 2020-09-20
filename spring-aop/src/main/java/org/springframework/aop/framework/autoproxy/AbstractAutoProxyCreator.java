@@ -376,10 +376,13 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
 		// Create proxy if we have advice.
 
-		/**
-		 * 【 核心方法 如果存在增强方法则创建代理 】
-		 * 1、获取增强方法、或者增强器
-		 * 2、根据获取的增强进行代理。
+		/*************************
+		 *
+		 * 【 TODO 核心方法 如果存在增强方法则创建代理 】
+		 *
+		 * 	1、获取增强方法、或者增强器
+		 * 	2、根据获取的增强进行代理。
+		 *
 		 * 为目标 bean 查找合适的通知器。{@link AbstractAdvisorAutoProxyCreator#getAdvicesAndAdvisorsForBean(Class, String, TargetSource)}
 		 */
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
@@ -391,7 +394,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (specificInterceptors != DO_NOT_PROXY) {
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);
 
-			/**
+			/*************************
+			 *
 			 * 创建代理
 			 * 	1、获取增强方法或者增强器
 			 * 	2、根据获取的增强进行代理

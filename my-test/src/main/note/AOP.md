@@ -7,6 +7,10 @@
 ##### `<aop:aspectj-autoproxy/>` 标签对应的解析类 `AspectJAutoProxyBeanDefinitionParser`
 - 最终将解析后标签注册在 `AnnotationAwareAspectJAutoProxyCreator`
 
+
+##### 开启 AOP 权限
+- `EnableAspectJAutoProxy`
+
 #### 入口,
 - Bean 实例化后置处理 
 - `AbstractAutowireCapableBeanFactory # initializeBean()`

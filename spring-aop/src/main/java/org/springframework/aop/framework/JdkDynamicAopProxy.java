@@ -243,7 +243,7 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 				Object[] argsToUse = AopProxyUtils.adaptArgumentsIfNecessary(method, args);
 
 				/**
-				 * 通过反射调用目标对象的方法
+				 * 通过反射调用目标对象的方法。
 				 */
 				retVal = AopUtils.invokeJoinpointUsingReflection(target, method, argsToUse);
 			}

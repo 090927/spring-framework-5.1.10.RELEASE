@@ -22,6 +22,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
 import org.springframework.aop.Advisor;
+import org.springframework.aop.framework.ReflectiveMethodInvocation;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.core.NamedThreadLocal;
 import org.springframework.core.PriorityOrdered;
@@ -90,6 +91,10 @@ public final class ExposeInvocationInterceptor implements MethodInterceptor, Pri
 		MethodInvocation oldInvocation = invocation.get();
 		invocation.set(mi);
 		try {
+
+			/**
+			 * 调用链 {@link ReflectiveMethodInvocation#proceed()}
+			 */
 			return mi.proceed();
 		}
 		finally {

@@ -62,6 +62,8 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 		if (adviceObject instanceof Advisor) {
 			return (Advisor) adviceObject;
 		}
+		
+		// 如果对象 非 Advice 类型, 则抛出异常
 		if (!(adviceObject instanceof Advice)) {
 			throw new UnknownAdviceTypeException(adviceObject);
 		}
@@ -74,6 +76,14 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 		}
 		for (AdvisorAdapter adapter : this.adapters) {
 			// Check that it is supported.
+
+			/**
+			 * 检测类型 
+			 * 	{@link AfterReturningAdviceAdapter#supportsAdvice(Advice)} 
+			 * 	{@link MethodBeforeAdviceAdapter#supportsAdvice(Advice)} 
+			 *  {@link SimpleBeforeAdviceAdapter#supportsAdvice(Advice)} 
+			 *  {@link ThrowsAdviceAdapter#supportsAdvice(Advice)} 
+			 */
 			if (adapter.supportsAdvice(advice)) {
 				return new DefaultPointcutAdvisor(advice);
 			}
