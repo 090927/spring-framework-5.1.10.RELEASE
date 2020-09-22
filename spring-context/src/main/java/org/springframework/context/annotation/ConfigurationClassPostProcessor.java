@@ -217,7 +217,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	/**
 	 * Derive further bean definitions from the configuration classes in the registry.
 	 *
-	 *  调用方
+	 *  【 核心方法 】 注册解析 bean。
 	 *  1、{@link AbstractApplicationContext#refresh} “ invokeBeanFactoryPostProcessors ”
 	 */
 	@Override
@@ -346,7 +346,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 		// Parse each @Configuration class
 
-		// 4. 实例化ConfigurationClassParser 为了解析 各个配置类
+		/*
+		 * 4. 实例化ConfigurationClassParser 为了解析 各个配置类
+		 */
 		ConfigurationClassParser parser = new ConfigurationClassParser(
 				this.metadataReaderFactory, this.problemReporter, this.environment,
 				this.resourceLoader, this.componentScanBeanNameGenerator, registry);

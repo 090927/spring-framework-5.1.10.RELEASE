@@ -39,6 +39,9 @@ import org.springframework.web.WebApplicationInitializer;
  * @author Chris Beams
  * @author Juergen Hoeller
  * @since 3.2
+ *
+ *
+ *   如果构件 Web Root 应用山下午（WebApplicationContext）成功则替代 web.xml 注册 ContextLoaderListener.
  */
 public abstract class AbstractContextLoaderInitializer implements WebApplicationInitializer {
 
@@ -70,6 +73,7 @@ public abstract class AbstractContextLoaderInitializer implements WebApplication
 			 * 	当Web 应用启动时，首先 Servlet 容器调用 ServletContextListener 实现类的默认构造器。
 			 *
 			 * 	2、随后 调用 {@link ContextLoaderListener#contextInitialized(ServletContextEvent)}  方法被调用。
+			 *
 			 * 	3、当Web 应用容器关闭时，Servlet 容器则调用 {@link ContextLoaderListener#contextDestroyed(ServletContextEvent)}
 			 */
 			ContextLoaderListener listener = new ContextLoaderListener(rootAppContext);

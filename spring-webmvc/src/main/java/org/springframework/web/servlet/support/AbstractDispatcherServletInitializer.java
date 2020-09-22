@@ -67,7 +67,15 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 	 */
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
+
+		/**
+		 * super 调用 {@link AbstractContextLoaderInitializer#onStartup(ServletContext)}
+		 */
 		super.onStartup(servletContext);
+
+		/**
+		 * 注册 DispatcherServlet {@link #registerDispatcherServlet(ServletContext)}
+		 */
 		registerDispatcherServlet(servletContext);
 	}
 
@@ -83,9 +91,14 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 	 * @param servletContext the context to register the servlet against
 	 */
 	protected void registerDispatcherServlet(ServletContext servletContext) {
+
+		//  servletName = ‘dispatcher’
 		String servletName = getServletName();
 		Assert.hasLength(servletName, "getServletName() must not return null or empty");
 
+		/**
+		 * 创建容器 {@link AbstractAnnotationConfigDispatcherServletInitializer#createServletApplicationContext()}
+		 */
 		WebApplicationContext servletAppContext = createServletApplicationContext();
 		Assert.notNull(servletAppContext, "createServletApplicationContext() must not return null");
 
