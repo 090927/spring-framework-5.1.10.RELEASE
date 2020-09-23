@@ -226,7 +226,9 @@ class ConfigurationClassParser {
 		return this.configurationClasses.keySet();
 	}
 
-
+	/**
+	 * 解析
+	 */
 	protected void processConfigurationClass(ConfigurationClass configClass) throws IOException {
 
 		/**

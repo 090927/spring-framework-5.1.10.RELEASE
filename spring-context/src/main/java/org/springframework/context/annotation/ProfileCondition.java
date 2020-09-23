@@ -31,6 +31,10 @@ import org.springframework.util.MultiValueMap;
  */
 class ProfileCondition implements Condition {
 
+	/**
+	 *  `@Profile` 原理。
+	 * @return
+	 */
 	@Override
 	public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
 
@@ -46,6 +50,8 @@ class ProfileCondition implements Condition {
 				 *  Profile 匹配 {@link org.springframework.core.env.AbstractEnvironment#acceptsProfiles(Profiles)}
 				 */
 				if (context.getEnvironment().acceptsProfiles(Profiles.of((String[]) value))) {
+
+					// 如果和环境参数匹配的话, 则返回true
 					return true;
 				}
 			}

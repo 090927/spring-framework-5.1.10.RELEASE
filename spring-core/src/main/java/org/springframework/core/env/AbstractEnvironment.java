@@ -75,6 +75,8 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 	 * is in use, this property may be specified as an environment variable as
 	 * {@code SPRING_PROFILES_ACTIVE}.
 	 * @see ConfigurableEnvironment#setActiveProfiles
+	 *
+	 *  【 有效配置 】
 	 */
 	public static final String ACTIVE_PROFILES_PROPERTY_NAME = "spring.profiles.active";
 
@@ -86,6 +88,8 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 	 * is in use, this property may be specified as an environment variable as
 	 * {@code SPRING_PROFILES_DEFAULT}.
 	 * @see ConfigurableEnvironment#setDefaultProfiles
+	 *
+	 *  【 默认配置 】
 	 */
 	public static final String DEFAULT_PROFILES_PROPERTY_NAME = "spring.profiles.default";
 
@@ -355,6 +359,8 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 	 * Return whether the given profile is active, or if active profiles are empty
 	 * whether the profile should be active by default.
 	 * @throws IllegalArgumentException per {@link #validateProfile(String)}
+	 *
+	 *  属于 “非” 条件逻辑，如果 Profile 存在多个Profile 值，第一个 `isProfileActive` 匹配表示可接受。
 	 */
 	protected boolean isProfileActive(String profile) {
 		validateProfile(profile);

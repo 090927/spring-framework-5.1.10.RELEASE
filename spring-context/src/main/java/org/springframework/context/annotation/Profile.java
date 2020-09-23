@@ -25,6 +25,7 @@ import java.lang.annotation.Target;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Profiles;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 
 /**
  * Indicates that a component is eligible for registration when one or more
@@ -99,6 +100,10 @@ import org.springframework.core.env.Profiles;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+
+/**
+ * 原理 {@link ProfileCondition#matches(ConditionContext, AnnotatedTypeMetadata)}
+ */
 @Conditional(ProfileCondition.class)
 public @interface Profile {
 

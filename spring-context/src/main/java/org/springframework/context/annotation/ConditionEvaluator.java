@@ -94,6 +94,13 @@ class ConditionEvaluator {
 
 			// 是配置类的话直接使用 PARSE_CONFIGURATION阶段
 			if (metadata instanceof AnnotationMetadata &&
+
+					/**
+					 * 	1、判断是否是 `@Configuration`
+					 * 	2、是否是 `@Component`、`ComponentScan`、`Import`、`ImportResource`
+					 * 	3、是上面其中一个注解，则返回 true。
+					 *  {@link ConfigurationClassUtils#isConfigurationCandidate(AnnotationMetadata)}
+					 */
 					ConfigurationClassUtils.isConfigurationCandidate((AnnotationMetadata) metadata)) {
 
 				/*

@@ -45,6 +45,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternUtils;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReader;
@@ -213,7 +214,10 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 */
 	@SuppressWarnings("unchecked")
 	protected void registerDefaultFilters() {
-		// 向要包含 过滤规则中 添加 @Component 注解类，注意 Spring 中 @Repository。
+
+		/*
+		 * 向要包含 过滤规则中 添加 @Component 注解类，注意 Spring 中 @Repository。
+		 */
 		this.includeFilters.add(new AnnotationTypeFilter(Component.class));
 
 		// 获取当前类的类加载器。
@@ -581,9 +585,15 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 */
 	private boolean isConditionMatch(MetadataReader metadataReader) {
 		if (this.conditionEvaluator == null) {
+
+			// 调用构造函数，进行封装。
 			this.conditionEvaluator =
 					new ConditionEvaluator(getRegistry(), this.environment, this.resourcePatternResolver);
 		}
+
+		/**
+		 * 抽象 `ConditionEvaluator` {@link ConditionEvaluator#shouldSkip(AnnotatedTypeMetadata)}
+		 */
 		return !this.conditionEvaluator.shouldSkip(metadataReader.getAnnotationMetadata());
 	}
 

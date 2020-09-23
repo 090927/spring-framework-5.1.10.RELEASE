@@ -56,10 +56,16 @@ public abstract class AbstractReactiveWebInitializer implements WebApplicationIn
 		String servletName = getServletName();
 		Assert.hasLength(servletName, "getServletName() must not return null or empty");
 
+		/**
+		 * 创建web 容器 {@link #createApplicationContext()}
+		 */
 		ApplicationContext applicationContext = createApplicationContext();
 		Assert.notNull(applicationContext, "createApplicationContext() must not return null");
 
+		// 刷新容器
 		refreshApplicationContext(applicationContext);
+
+		// 注册监听器。
 		registerCloseListener(servletContext, applicationContext);
 
 		HttpHandler httpHandler = WebHttpHandlerBuilder.applicationContext(applicationContext).build();
@@ -73,6 +79,8 @@ public abstract class AbstractReactiveWebInitializer implements WebApplicationIn
 
 		registration.setLoadOnStartup(1);
 		registration.addMapping(getServletMapping());
+
+		// 设置容器异步。
 		registration.setAsyncSupported(true);
 	}
 
