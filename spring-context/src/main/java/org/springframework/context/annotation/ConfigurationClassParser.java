@@ -165,6 +165,8 @@ class ConfigurationClassParser {
 	 * @param configCandidates
 	 */
 	public void parse(Set<BeanDefinitionHolder> configCandidates) {
+
+
 		for (BeanDefinitionHolder holder : configCandidates) {
 			BeanDefinition bd = holder.getBeanDefinition();
 			try {
@@ -638,7 +640,9 @@ class ConfigurationClassParser {
 			return;
 		}
 
-		// 2. 进行循环依赖的检查
+		/**
+		 * 2. 进行循环依赖的检查 {@link #isChainedImportOnStack(ConfigurationClass)}
+		 */
 		if (checkForCircularImports && isChainedImportOnStack(configClass)) {
 			this.problemReporter.error(new CircularImportProblem(configClass, this.importStack));
 		}
@@ -662,6 +666,10 @@ class ConfigurationClassParser {
 						ImportSelector selector = BeanUtils.instantiateClass(candidateClass, ImportSelector.class);
 						ParserStrategyUtils.invokeAwareMethods(
 								selector, this.environment, this.resourceLoader, this.registry);
+
+						/**
+						 * DeferredImportSelector 是 {@link ImportSelector}的一种扩展 新增 `Group`进行二次处理。
+						 */
 						if (selector instanceof DeferredImportSelector) {
 
 							/**
@@ -677,7 +685,7 @@ class ConfigurationClassParser {
 							Collection<SourceClass> importSourceClasses = asSourceClasses(importClassNames);
 
 							/**
-							 * 递归进行解析 {@link #processImports(ConfigurationClass, SourceClass, Collection, boolean)}
+							 *  递归执行 {@link #processImports(ConfigurationClass, SourceClass, Collection, boolean)}
 							 */
 							processImports(configClass, currentSourceClass, importSourceClasses, false);
 						}
@@ -692,6 +700,10 @@ class ConfigurationClassParser {
 								BeanUtils.instantiateClass(candidateClass, ImportBeanDefinitionRegistrar.class);
 						ParserStrategyUtils.invokeAwareMethods(
 								registrar, this.environment, this.resourceLoader, this.registry);
+
+						/**
+						 * 将 `注册`
+						 */
 						configClass.addImportBeanDefinitionRegistrar(registrar, currentSourceClass.getMetadata());
 					}
 					else {
@@ -930,6 +942,10 @@ class ConfigurationClassParser {
 					ConfigurationClass configurationClass = this.configurationClasses.get(
 							entry.getMetadata());
 					try {
+
+						/**
+						 * 循环解析 {@link #processImports(ConfigurationClass, SourceClass, Collection, boolean)}
+						 */
 						processImports(configurationClass, asSourceClass(configurationClass),
 								asSourceClasses(entry.getImportClassName()), false);
 					}

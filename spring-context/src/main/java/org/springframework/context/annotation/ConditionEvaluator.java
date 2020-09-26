@@ -124,6 +124,10 @@ class ConditionEvaluator {
 		 */
 		for (String[] conditionClasses : getConditionClasses(metadata)) {
 			for (String conditionClass : conditionClasses) {
+
+				/*
+				 * 从 classLoader 中获取 `conditionClass`
+				 */
 				Condition condition = getCondition(conditionClass, this.context.getClassLoader());
 				conditions.add(condition);
 			}

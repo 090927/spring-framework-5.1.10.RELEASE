@@ -145,6 +145,8 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	@Override
 	public void setEnvironment(ConfigurableEnvironment environment) {
 		super.setEnvironment(environment);
+
+		// 设置环境
 		this.reader.setEnvironment(environment);
 		this.scanner.setEnvironment(environment);
 	}

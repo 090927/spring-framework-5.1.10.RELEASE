@@ -348,6 +348,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 		/*
 		 * 4. 实例化ConfigurationClassParser 为了解析 各个配置类
+		 *
+		 *   设置 resourceLoader 其实就是 `DefaultResourceLoader`
 		 */
 		ConfigurationClassParser parser = new ConfigurationClassParser(
 				this.metadataReaderFactory, this.problemReporter, this.environment,
