@@ -216,6 +216,7 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 			/**
 			 *  普通拦截器，直接调用拦截器，例如：
 			 *  1、{@link org.springframework.aop.framework.adapter.MethodBeforeAdviceInterceptor#invoke(MethodInvocation)}
+			 *  {@link org.springframework.aop.framework.adapter.AfterReturningAdviceInterceptor#invoke(MethodInvocation)}
 			 *  2、{@link org.springframework.aop.aspectj.AspectJAroundAdvice#invoke(MethodInvocation)}
 			 *  3、{@link org.springframework.aop.aspectj.AspectJAfterAdvice#invoke(MethodInvocation)}
 			 *  4、{@link org.springframework.aop.interceptor.ExposeInvocationInterceptor#invoke(MethodInvocation)}

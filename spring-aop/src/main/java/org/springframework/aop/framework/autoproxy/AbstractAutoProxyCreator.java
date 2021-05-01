@@ -362,10 +362,10 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			return bean;
 		}
 
-		/*
+		/**
 		 * 判断是否是一些 `InfrastructureClass` 或者是否应该跳过 Bean。
-		 * 1、InfrastructureClass 就是指 Advice、PointCut、Advisor 等接口的实现类
-		 * 2、shouldSkip 默认返回false。 由于是 protected 修饰的方法，子类可以覆盖。
+		 * 1、{@link #isInfrastructureClass(Class)}  就是指 Advice、PointCut、Advisor 等接口的实现类
+		 * 2、{@link #shouldSkip(Class, String)}  默认返回false。 由于是 protected 修饰的方法，子类可以覆盖。
 		 */
 		if (isInfrastructureClass(bean.getClass()) || shouldSkip(bean.getClass(), beanName)) {
 
@@ -384,6 +384,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		 * 	2、根据获取的增强进行代理。
 		 *
 		 * 为目标 bean 查找合适的通知器。{@link AbstractAdvisorAutoProxyCreator#getAdvicesAndAdvisorsForBean(Class, String, TargetSource)}
+		 *
+		 *   specificInterceptors 返回 Advisor 的数组
+		 *
 		 */
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
 
@@ -533,13 +536,18 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		 * 将拦截器封装为增强器 {@link #buildAdvisors(String, Object[])}
 		 */
 		Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
-		// 加入增强器。
+
+		/**
+		 * 加入增强器。存入 {@link org.springframework.aop.framework.AdvisedSupport#advisors
+		 */
 		proxyFactory.addAdvisors(advisors);
 
 		// 设置要代理的类
 		proxyFactory.setTargetSource(targetSource);
 
-		// 定制代理类
+		/**
+		 * 定制代理类 【 子类扩展 】
+		 */
 		customizeProxyFactory(proxyFactory);
 
 		// 用来控制代理工厂被配置之后是否还允许修改通知 缺省值为false（即在代理被配置之后不允许修改代理的配置）

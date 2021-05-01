@@ -110,9 +110,16 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 			interceptors.add((MethodInterceptor) advice);
 		}
 
-		/*
+		/**
 		 * 对于 AspectJMethodBeforeAdvice 等类型的通知，由于没有实现 MethodInterceptor
 		 * 接口，所以这里需要通过适配器进行转换
+		 *
+		 *   adapters 在构造方法内，默认将 *AdviceAdapter 添加到列表中。
+		 *
+		 *   getInterceptor
+		 *   1、{@link AfterReturningAdviceAdapter#getInterceptor(Advisor)}
+		 *   2、{@link MethodBeforeAdviceAdapter#getInterceptor(Advisor)}
+		 *   3、{@link ThrowsAdviceAdapter#getInterceptor(Advisor)}
 		 */
 		for (AdvisorAdapter adapter : this.adapters) {
 			if (adapter.supportsAdvice(advice)) {

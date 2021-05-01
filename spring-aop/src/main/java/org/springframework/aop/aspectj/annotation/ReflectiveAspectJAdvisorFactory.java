@@ -218,6 +218,8 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 	/**
 	 * 1、获取切点信息。
 	 * 2、根据切点生成增强器。
+	 *
+	 * 	getAdvisors 函数会获取 `@Aspect` 修饰的实例中所有没有被 `@Pointcut` 修饰的方法，然后调用getAdvisor函数，并且将这些方法作为参数
 	 */
 	@Override
 	@Nullable
@@ -267,7 +269,7 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 				new AspectJExpressionPointcut(candidateAspectClass, new String[0], new Class<?>[0]);
 
 		/*
-		 * 提取到的注解中表达式如 @Pointcut("execution(* *.*test*(..))")中的 execution(* *.*test*(..)
+		 * 提取到的注解中表达式如 @Pointcut("execution(* *.*test*(..))")中的 `execution(* *.*test*(..)`
 		 */
 		ajexp.setExpression(aspectJAnnotation.getPointcutExpression());
 		if (this.beanFactory != null) {

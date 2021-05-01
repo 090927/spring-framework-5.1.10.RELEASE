@@ -101,7 +101,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 		/**
 		 * 查找所有的通知器 {@link AnnotationAwareAspectJAutoProxyCreator#findCandidateAdvisors()}
 		 * 1、从父类方法从容器中获取（解析 XML 文件）
-		 * 2、解析 @Aspect
+		 * 2、比如说`@Async`所需的`AsyncAnnotationAdvisor`
 		 */
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
 

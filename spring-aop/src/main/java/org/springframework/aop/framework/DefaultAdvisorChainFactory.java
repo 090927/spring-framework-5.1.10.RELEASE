@@ -53,6 +53,9 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 	 * 		如果是 `IntroductionAdvisor` 则判断此 `Advisor` 是否应用到目标类 targetClass 上，
 	 * 		如果是 `PointcutAdvisor` 则判断 此 `Advisor`是否应用到目标方 `Method` 上，
 	 * 	将满足条件的 Advisor 通过 AdvisorAdaptor，转换成拦截器列表返回。
+	 *
+	 * 	 方法返回 Object 其实就是 {@link InterceptorAndDynamicMethodMatcher} 对象。
+	 * 	 	包含、方法拦截器、方法匹配器
 	 */
 	@Override
 	public List<Object> getInterceptorsAndDynamicInterceptionAdvice(

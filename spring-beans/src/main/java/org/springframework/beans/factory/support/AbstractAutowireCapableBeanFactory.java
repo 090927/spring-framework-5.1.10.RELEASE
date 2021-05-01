@@ -445,13 +445,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
-	 * Bean 初始化之后的处理方法
+	 * Bean 初始化之后的处理方法 （调用 BeanPostProcessor 后置处理器实例初始化之前的处理方法）
 	 */
 	@Override
 	public Object applyBeanPostProcessorsAfterInitialization(Object existingBean, String beanName)
 			throws BeansException {
 
 		Object result = existingBean;
+
+		// 遍历容器为所创建的 Bean 添加所有 BeanPostProcessor 后置处理器
 		for (BeanPostProcessor processor : getBeanPostProcessors()) {
 
 			/**
