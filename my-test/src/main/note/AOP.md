@@ -11,7 +11,7 @@
 ##### 开启 AOP 权限
 - `EnableAspectJAutoProxy`
 
-#### 入口,
+#### 入口（代理类创建）,
 - Bean 实例化后置处理 
 - `AbstractAutowireCapableBeanFactory # initializeBean()`
     - 核心 `AbstractAutoProxyCreator # postProcessAfterInitialization()` 
@@ -22,3 +22,7 @@
     
 - `BeanFactoryUtis` 工具类
     - `beanNamesForTypeIncludingAncestors` 获取容器中，某个类型Bean，BeanName。
+  
+##### 核心类
+- AbstractAutoProxyCreator `专为含有 Advisor Bean 处理代理创建核心抽象类`
+  - AspectJAwareAdvisorAutoProxyCreator `支持 AspectJ 的 Advisor 代理类创建`

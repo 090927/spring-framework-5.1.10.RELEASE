@@ -665,6 +665,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				try {
 
 					/**
+					 *  TODO `@Autowired` 注解，在这里进行解析。并将注解需要的信息，放入缓存。
+					 *
 					 * 处理合并后的 BeanDefinition. {@link #applyMergedBeanDefinitionPostProcessors(RootBeanDefinition, Class, String)}
 					 */
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
@@ -1239,11 +1241,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	protected void applyMergedBeanDefinitionPostProcessors(RootBeanDefinition mbd, Class<?> beanType, String beanName) {
 		for (BeanPostProcessor bp : getBeanPostProcessors()) {
+
+			// 只处理 `MergedBeanDefinitionPostProcessor` 实现类。
 			if (bp instanceof MergedBeanDefinitionPostProcessor) {
 				MergedBeanDefinitionPostProcessor bdp = (MergedBeanDefinitionPostProcessor) bp;
 
 				/**
-				 * 【 】{@link org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor#postProcessMergedBeanDefinition(RootBeanDefinition, Class, String)}
+				 * 【 获取 AutoWired 元信息 】{@link org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor#postProcessMergedBeanDefinition(RootBeanDefinition, Class, String)}
 				 */
 				bdp.postProcessMergedBeanDefinition(mbd, beanType, beanName);
 			}
@@ -1736,7 +1740,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
 
 					/**
-					 * @Autowired注解:  {@link org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor#postProcessProperties(PropertyValues, Object, String)}
+					 *
+					 *   @Autowired 和 @Resource 的注入工作。
+					 *
+					 * 	@Autowired注解:  {@link org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor#postProcessProperties(PropertyValues, Object, String)}
+					 * 	@Resource {@link org.springframework.context.annotation.CommonAnnotationBeanPostProcessor#postProcessProperties(PropertyValues, Object, String)}
 					 */
 					PropertyValues pvsToUse = ibp.postProcessProperties(pvs, bw.getWrappedInstance(), beanName);
 					if (pvsToUse == null) {
@@ -1745,9 +1753,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 						}
 
 						/**
-						 * 对所有需要依赖检查的属性进行后处理
-						 * @Autowired注解:  {@link org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor#postProcessProperties(PropertyValues, Object, String)}
-						 * {@link org.springframework.context.annotation.CommonAnnotationBeanPostProcessor}
+						 * 对所有需要依赖检查的属性进行后处理 （兼容老版本）
+						 *
+						 * 	@Autowired 注解:  {@link org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor#postProcessPropertyValues(PropertyValues, PropertyDescriptor[], Object, String)}
+						 * 	@Resource 注解 {@link org.springframework.context.annotation.CommonAnnotationBeanPostProcessor#postProcessPropertyValues(PropertyValues, PropertyDescriptor[], Object, String)}
 						 */
 						pvsToUse = ibp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
 						if (pvsToUse == null) {

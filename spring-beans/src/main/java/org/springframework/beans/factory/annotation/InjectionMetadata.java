@@ -70,6 +70,8 @@ public class InjectionMetadata {
 		for (InjectedElement element : this.injectedElements) {
 			Member member = element.getMember();
 			if (!beanDefinition.isExternallyManagedConfigMember(member)) {
+
+				// 把method或者field放入 `externallyManagedConfigMembers` 缓存中
 				beanDefinition.registerExternallyManagedConfigMember(member);
 				checkedElements.add(element);
 				if (logger.isTraceEnabled()) {
@@ -81,6 +83,13 @@ public class InjectionMetadata {
 	}
 
 	public void inject(Object target, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
+
+		/**
+		 *  源头 {@link AutowiredAnnotationBeanPostProcessor#postProcessMergedBeanDefinition(RootBeanDefinition, Class, String)} 获取的注解元数据。
+		 *
+		 * checkedElements 数据，在 {@link #checkConfigMembers(RootBeanDefinition)}
+		 *
+		 */
 		Collection<InjectedElement> checkedElements = this.checkedElements;
 		Collection<InjectedElement> elementsToIterate =
 				(checkedElements != null ? checkedElements : this.injectedElements);
@@ -91,7 +100,7 @@ public class InjectionMetadata {
 				}
 
 				/**
-				 * 依次循环注入 {@link org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.AutowiredFieldElement#inject(Object, String, PropertyValues)}
+				 * 依次循环注入 “字段的属性注入” {@link org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.AutowiredFieldElement#inject(Object, String, PropertyValues)}
 				 */
 				element.inject(target, beanName, pvs);
 			}

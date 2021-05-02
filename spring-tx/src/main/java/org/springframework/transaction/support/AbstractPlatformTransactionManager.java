@@ -369,7 +369,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 
 		/**
 		 *
-		 * 判断当前线程是否存在事务，判断依据为当前线程记录的连接不为空且连接中(connectionHolder)中的transactionActive属性不为空
+		 * 判断当前线程是否存在事务，判断依据为当前线程记录的连接不为空且连接中(connectionHolder)中的 “transactionActive” 属性不为空 （doBegin 设置为 true）
 		 *
 		 *  {@link org.springframework.jdbc.datasource.DataSourceTransactionManager#isExistingTransaction(Object)}
 		 */

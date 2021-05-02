@@ -389,7 +389,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 		try {
 
 			/**
-			 * 调用注入方法 {@link InjectionMetadata#inject(Object, String, PropertyValues)}
+			 *  字段的属性注入 {@link InjectionMetadata#inject(Object, String, PropertyValues)}
 			 */
 			metadata.inject(bean, beanName, pvs);
 		}
@@ -508,6 +508,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				}
 			});
 
+			// 接着是遍历这个类里面的方法
 			ReflectionUtils.doWithLocalMethods(targetClass, method -> {
 
 				// 遍历所有的方法
