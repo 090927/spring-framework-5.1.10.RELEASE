@@ -341,6 +341,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 
 		/**
 		 * 【 编程式事务处理 】
+		 *  	直接，进行 “方法调用”
 		 */
 		else {
 			final ThrowableHolder throwableHolder = new ThrowableHolder();
@@ -527,6 +528,8 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 
 				/**
 				 * [核心] 获取 TransactionStatus 这里有建立事务连接  {@link org.springframework.transaction.support.AbstractPlatformTransactionManager#getTransaction}
+				 *
+				 *   “TransactionStatus” 默认实现类 {@link org.springframework.transaction.support.DefaultTransactionStatus}
 				 */
 				status = tm.getTransaction(txAttr);
 			}
@@ -625,6 +628,8 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			}
 
 			/**
+			 *
+			 *  1、回滚条件
 			 * 这里判断是否回滚默认的依据是抛出的异常是否是 (ex instanceof RuntimeException || ex instanceof Error)，我们熟悉的Exception默认是不处理的
 			 *
 			 *  {@link DefaultTransactionAttribute#rollbackOn(Throwable)}
@@ -634,6 +639,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				try {
 
 					/**
+					 *  2、回滚处理
 					 *  根据 `transactionStatus` 信息进行回滚处理。
 					 *
 					 * 回滚 {@link org.springframework.transaction.support.AbstractPlatformTransactionManager#rollback(TransactionStatus)}
